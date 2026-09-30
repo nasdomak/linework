@@ -133,7 +133,7 @@
       ],
       "verification": "tests/test_repo_shape.py asserts LICENSE exists and that its SPDX identifier matches the one named in ADR 0004",
       "size": "S",
-      "status": "todo",
+      "status": "done",
       "blocked_reason": "",
       "decision": "D-001"
     },
@@ -151,7 +151,7 @@
       ],
       "verification": "tests/test_repo_shape.py asserts the ADR exists, is non-empty, and contains the two-doors rule verbatim",
       "size": "M",
-      "status": "todo",
+      "status": "done",
       "blocked_reason": "",
       "decision": ""
     },
@@ -171,7 +171,7 @@
       ],
       "verification": "tests/test_repo_shape.py asserts the ADR exists and names both layers and all three channels",
       "size": "M",
-      "status": "todo",
+      "status": "done",
       "blocked_reason": "",
       "decision": ""
     },

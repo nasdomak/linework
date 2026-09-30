@@ -1,17 +1,37 @@
 {
   "schema": 1,
   "project": "linework",
-  "updated": "2026-09-17T00:00:00Z",
+  "updated": "2026-09-30T05:50:42Z",
   "session_built_workbench": 2,
   "loop_enabled": false,
   "loop_note": "Set by a sentence from Marco: 'vai' turns this true, 'fermati' turns it false. tools/loop.py go / stop do it.",
   "current_phase": 0,
   "current_task": null,
   "gate_width": "phase",
-  "gate_width_options": ["task", "phase", "run"],
+  "gate_width_options": [
+    "task",
+    "phase",
+    "run"
+  ],
   "gate_width_note": "How far the loop may run before it stops for Marco. 'task' stops after every task, 'phase' runs freely inside a product phase and stops at phase boundaries, 'run' stops only when it runs out of unblocked work. Marco changes it by saying so.",
   "runs": 0,
   "last_run": null,
   "awaiting_marco": [],
-  "history": []
+  "history": [
+    {
+      "task": "P0-T01",
+      "title": "Decide the licence and record it in an ADR",
+      "finished": "2026-09-30T05:50:41Z"
+    },
+    {
+      "task": "P0-T02",
+      "title": "Write ADR 0001 - thinking is free, the hand is guided",
+      "finished": "2026-09-30T05:50:41Z"
+    },
+    {
+      "task": "P0-T03",
+      "title": "Write ADR 0002 - the memory model",
+      "finished": "2026-09-30T05:50:42Z"
+    }
+  ]
 }

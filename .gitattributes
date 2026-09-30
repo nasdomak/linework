@@ -1,0 +1,8 @@
+# Line endings are fixed here, not left to each machine: Windows runners check
+# out with core.autocrlf=true, and a DXF or a golden image must never be
+# rewritten by git.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.png binary
+*.dxf binary

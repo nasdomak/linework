@@ -1,0 +1,97 @@
+# linework CI.
+#
+# Every push and pull request runs, on three operating systems and two Python
+# versions, the checks a session relies on when nobody is watching:
+#
+#   plan        tools/loop.py check      the executable plan is coherent
+#               tools/sync_plan.py check the prose plan and the backlog agree
+#               tools/check_core_imports.py  the engine core is standard-library only
+#   test        pytest                   the headless suite: no CAD, no Ollama, no network
+#   render      the fixture drawings rendered to PNG and uploaded as artefacts,
+#               so every push leaves pictures behind that can be looked at.
+#
+# A session reads the result itself (backlog task P0-T05): it never assumes green.
+
+name: ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  plan:
+    name: plan and rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: The executable plan is coherent
+        run: python tools/loop.py check
+      - name: The prose plan and the backlog agree
+        run: python tools/sync_plan.py check
+      - name: The engine core imports nothing outside the standard library
+        run: python tools/check_core_imports.py --list
+
+  test:
+    name: test (${{ matrix.os }}, py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install development dependencies
+        run: python -m pip install -r requirements-dev.txt
+      - name: The engine core imports nothing outside the standard library
+        run: python tools/check_core_imports.py
+      - name: Headless suite
+        run: python -m pytest -q -rs
+      - name: The stdlib-only runner agrees with pytest
+        run: python tools/run_tests.py
+
+  render:
+    name: render the fixtures
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install development dependencies
+        run: python -m pip install -r requirements-dev.txt
+      - name: Build the fixture drawings
+        run: python tests/fixtures/make_fixtures.py
+      - name: Render each drawing to PNG, with its numbers
+        run: |
+          mkdir -p out
+          for f in tests/fixtures/*.dxf; do
+            name=$(basename "$f" .dxf)
+            python tools/render_dxf.py "$f" "out/$name.png" --dpi 120 --stats > "out/$name.json"
+          done
+          ls -la out
+      - name: Upload the pictures
+        uses: actions/upload-artifact@v4
+        with:
+          name: renders-${{ github.sha }}
+          path: out/
+          if-no-files-found: error
+          retention-days: 30

@@ -136,12 +136,16 @@ them sits behind a marker and outside the default run.
 
 ## Licence
 
-Not yet decided — see decision `D-001` in `state/decisions.json` and product
-task `P0-T01`. The intent is a free, public, open-source release. The proposal on
-the table is GPL-2.0-or-later, because it stays compatible with LibreCAD's GPL v2
-for when the plugin arrives. Until the LICENSE file exists, treat this as "all
-rights reserved by default", which is precisely why it is the first task in the
-plan.
+**GPL-2.0-or-later.** `LICENSE` holds the GNU General Public License version 2;
+you may use version 2 or, at your option, any later version.
+
+Why this one, in a line: the engine links nothing of LibreCAD's, but the C++
+plugin that arrives in product phase 14 does, and LibreCAD is GPL v2. One licence
+that is compatible with it keeps the whole repository simple. The reasoning, the
+alternatives and the deadline for changing it are in
+[`docs/adr/0004-licence.md`](docs/adr/0004-licence.md).
+
+SPDX-License-Identifier: GPL-2.0-or-later
 
 ## Prior art
 
