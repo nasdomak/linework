@@ -1,12 +1,12 @@
 {
   "schema": 1,
   "project": "linework",
-  "updated": "2026-09-30T16:31:54Z",
+  "updated": "2026-09-30T21:21:15Z",
   "session_built_workbench": 2,
   "loop_enabled": true,
   "loop_note": "Set by a sentence from Marco: 'vai' turns this true, 'fermati' turns it false. tools/loop.py go / stop do it.",
   "current_phase": 0,
-  "current_task": null,
+  "current_task": "P0-T04",
   "gate_width": "phase",
   "gate_width_options": [
     "task",
