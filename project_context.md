@@ -35,13 +35,29 @@ Completeness is the north star. Name **`linework`** (Marco, 17/09/2026).
 
 ---
 
-## Current status (30/09/2026, end of session 3)
+## Current status (30/09/2026, first unattended run of the loop)
 
-**Workbench: finished except the live demonstration of one autonomous run,
-which was scheduled at the end of session 3 (see "Last action").
-Product: phase 0, 4 of 5 tasks done. Next: P0-T04, then the gate to phase 1.**
+**Workbench: finished, and demonstrated: the scheduled run took P0-T04 end to
+end with nobody watching. Product: phase 0 complete, 5 of 5 tasks.
+The loop is stopped at the gate to phase 1 (the language), waiting for "vai".**
 
-### Measured this session
+### Measured in the unattended run (30/09/2026)
+
+- **P0-T04 done**: `lang/ geometry/ memory/ engine/ shared/ dxf/` exist, each
+  with an `__init__.py` docstring and a `README.md` stating what it may and
+  may not import. `tests/test_dependency_rules.py` walks the imports
+  independently of `tools/check_core_imports.py`; a deliberate `import numpy`
+  in `geometry/` made it fail, as it must. CI green on all 8 jobs for commit
+  `43863d6`: **51 passed, 0 failed, 0 skipped on each of the six test jobs**.
+- **A loop defect found and fixed**: `finish` advanced `current_phase` when a
+  phase completed, and the gate compared against `current_phase`, so the loop
+  would have walked into phase 1 without stopping. The gate now compares with
+  `state.open_phase`, which only `loop.py go` ("vai") at a gate raises.
+  `tests/test_loop_gate.py` pins it. Reversible; flagged in the report.
+- The CI pictures for `43863d6` are unchanged: the P3-T04 render defects
+  (no plate outline, no walls, no dimension lines, no hatch) are still open.
+
+### Measured in session 3 (29-30/09/2026)
 
 - **GitHub is the source of truth** and the loop runs in the cloud:
   `https://github.com/nasdomak/linework`, public, created 30/09/2026 from the
@@ -118,20 +134,16 @@ Product: phase 0, 4 of 5 tasks done. Next: P0-T04, then the gate to phase 1.**
 
 ## Last action
 
-Session 3, 29-30/09/2026: corrected this file against the measured state;
-first commits; licence, ADR 0001/0002/0004; CI green on three systems; plan
-sync; CI results readable from the cloud; `PROMPT.md` and `CLAUDE.md` rewritten
-for the cloud loop; the loop switched on (`loop_enabled: true`) for the
-demonstration run; a scheduled task created to run the loop unattended.
+30/09/2026, first scheduled unattended run: P0-T04 (monorepo layout and
+dependency rules) done and verified; the phase-gate defect in `tools/loop.py`
+fixed with tests; stopped at the gate to phase 1.
 
 ---
 
 ## Next steps
 
-1. The scheduled run takes **P0-T04** (monorepo layout) end to end with nobody
-   watching: work, verify, commit, push, read CI, report. Then it reaches the
-   gate to phase 1 and stops.
-2. At the gate Marco looks at phase 0 and says "vai" for phase 1 (the language),
-   the riskiest phase of the project.
-3. Open the upstream conversation with LibreCAD about `addDimension` /
+1. Marco looks at phase 0 and says "vai" for phase 1 (the language), the
+   riskiest phase of the project. `loop.py go` then opens the gate and the next
+   run takes **P1-T01** (the commitment form).
+2. Open the upstream conversation with LibreCAD about `addDimension` /
    `addHatch` when convenient: long lead time, nothing depends on it.

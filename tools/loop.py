@@ -10,7 +10,7 @@ what to do. Standard library only, so it runs anywhere the project runs.
     py tools/loop.py start P0-T02    mark it in progress
     py tools/loop.py finish P0-T02   mark it done and advance
     py tools/loop.py block P0-T05 --reason "waiting for the token"
-    py tools/loop.py go              loop_enabled = true   ("vai")
+    py tools/loop.py go              loop_enabled = true, opens a waiting gate ("vai")
     py tools/loop.py stop            loop_enabled = false  ("fermati")
     py tools/loop.py gate phase      how far it may run unattended
     py tools/loop.py queue  --question ... --default ... --rationale ...
@@ -123,13 +123,32 @@ def crosses_gate(state, task, backlog):
         return True, "gate_width is 'task': the loop stops after every task."
     if width == "run":
         return False, ""
+    # The gate is measured against the highest phase Marco has opened, not
+    # against current_phase: `finish` advances current_phase as soon as a
+    # phase is complete, so comparing with it let the loop walk straight
+    # through every boundary (found by the first unattended run, 30/09/2026).
     phase = task["phase"]
-    if phase != state.get("current_phase"):
+    if phase > open_phase(state):
         p = phases_by_id(backlog).get(phase, {})
         if p.get("gate", True):
             return True, ("this task opens phase %s (%s), and the loop stops at "
                           "phase boundaries." % (phase, p.get("title", "?")))
     return False, ""
+
+
+def open_phase(state):
+    """The highest phase the loop may work in without stopping for Marco."""
+    return state.get("open_phase", state.get("current_phase", 0))
+
+
+def open_gate(state, backlog, decisions):
+    """Marco said "vai": if the next task waits at a phase gate, open it.
+    Returns the phase opened, or None when there was no gate to open."""
+    task, _ = next_task(backlog, decisions)
+    if task is None or task["phase"] <= open_phase(state):
+        return None
+    state["open_phase"] = task["phase"]
+    return task["phase"]
 
 
 def phase_progress(backlog):
@@ -274,10 +293,14 @@ def cmd_reopen(args):
 
 
 def cmd_go(args):
-    state = load(STATE)
+    """ "vai": enable the loop and, if it is waiting at a phase gate, open it."""
+    backlog, state, decisions = load(BACKLOG), load(STATE), load(DECISIONS)
     state["loop_enabled"] = True
+    opened = open_gate(state, backlog, decisions)
     state["updated"] = now()
     save(STATE, state)
+    if opened is not None:
+        print("gate opened: the loop may now work in phase %s." % opened)
     print("loop enabled. 'fermati' stops it.")
     return 0
 
@@ -430,6 +453,8 @@ def cmd_check(args):
 
     if state.get("gate_width") not in state.get("gate_width_options", []):
         problems.append("state.gate_width is not one of the options")
+    if not isinstance(state.get("open_phase", 0), int):
+        problems.append("state.open_phase must be a phase number")
     ct = state.get("current_task")
     if ct and ct not in index:
         problems.append("state.current_task %s is not a known task" % ct)

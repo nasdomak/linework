@@ -1,12 +1,14 @@
 {
   "schema": 1,
   "project": "linework",
-  "updated": "2026-09-30T21:21:15Z",
+  "updated": "2026-09-30T21:26:06Z",
   "session_built_workbench": 2,
   "loop_enabled": true,
   "loop_note": "Set by a sentence from Marco: 'vai' turns this true, 'fermati' turns it false. tools/loop.py go / stop do it.",
-  "current_phase": 0,
-  "current_task": "P0-T04",
+  "current_phase": 1,
+  "open_phase": 0,
+  "open_phase_note": "The highest phase the loop may work in without stopping. Only 'vai' at a gate (tools/loop.py go) raises it.",
+  "current_task": null,
   "gate_width": "phase",
   "gate_width_options": [
     "task",
@@ -14,8 +16,11 @@
     "run"
   ],
   "gate_width_note": "How far the loop may run before it stops for Marco. 'task' stops after every task, 'phase' runs freely inside a product phase and stops at phase boundaries, 'run' stops only when it runs out of unblocked work. Marco changes it by saying so.",
-  "runs": 0,
-  "last_run": null,
+  "runs": 1,
+  "last_run": {
+    "when": "2026-09-30T21:26:06Z",
+    "report": "reports/2026-09-30-run001.md"
+  },
   "awaiting_marco": [],
   "history": [
     {
@@ -37,6 +42,11 @@
       "task": "P0-T05",
       "title": "Prove CI green on Windows, macOS and Linux",
       "finished": "2026-09-30T16:30:20Z"
+    },
+    {
+      "task": "P0-T04",
+      "title": "Lay out the monorepo directories with their contracts",
+      "finished": "2026-09-30T21:24:13Z"
     }
   ]
 }

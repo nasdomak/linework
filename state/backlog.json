@@ -190,7 +190,7 @@
       ],
       "verification": "tests/test_dependency_rules.py walks the import statements of those packages and fails on any third-party import",
       "size": "M",
-      "status": "doing",
+      "status": "done",
       "blocked_reason": "",
       "decision": ""
     },
