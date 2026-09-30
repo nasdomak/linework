@@ -1,0 +1,996 @@
+{
+  "schema": 1,
+  "project": "linework",
+  "generated_from": "docs/ACTION_PLAN.md",
+  "note": "The executable plan. This file, not a human and not a conversation, is the single answer to 'what is next'. A session reads it; it never asks. Keep docs/ACTION_PLAN.md as the human-readable companion: tools/sync_plan.py checks the two agree and CI fails if they drift.",
+  "status_values": [
+    "todo",
+    "doing",
+    "done",
+    "blocked"
+  ],
+  "phases": [
+    {
+      "id": 0,
+      "title": "Foundations and contracts",
+      "gate": true,
+      "summary": "Repository, licence, the two founding ADRs, CI green."
+    },
+    {
+      "id": 1,
+      "title": "The language",
+      "gate": true,
+      "summary": "What can be said: the form the model commits through and the script the engine writes. The bridle on the hand."
+    },
+    {
+      "id": 2,
+      "title": "The geometry solver",
+      "gate": true,
+      "summary": "Relations become exact coordinates. Pure Python, massively tested."
+    },
+    {
+      "id": 3,
+      "title": "The drawing: DXF in and out",
+      "gate": true,
+      "summary": "Write and read real DXF, including associative dimensions and hatches; safe round-trip."
+    },
+    {
+      "id": 4,
+      "title": "Memory, layer 1: the standard",
+      "gate": true,
+      "summary": "Values, three levels, three fill channels, provenance and dates."
+    },
+    {
+      "id": 5,
+      "title": "The brain: free reasoning, guided hand",
+      "gate": true,
+      "summary": "The first sentence that becomes a drawing, with real thinking in front of it."
+    },
+    {
+      "id": 6,
+      "title": "Eyes, and editing what already exists",
+      "gate": true,
+      "summary": "Aggregated perception, selection semantics, cross-cutting edits, reading questions."
+    },
+    {
+      "id": 7,
+      "title": "Questions, briefing, session memory",
+      "gate": true,
+      "summary": "Deterministic questions with defaults, briefing up front, references that resolve."
+    },
+    {
+      "id": 8,
+      "title": "Project gear",
+      "gate": true,
+      "summary": "Decompose a goal into features; plan, execute, re-perceive, replan; preview before commit."
+    },
+    {
+      "id": 9,
+      "title": "The design conversation",
+      "gate": true,
+      "summary": "Rung 4 begins: alternatives, trade-offs, argument, self-critique before drawing."
+    },
+    {
+      "id": 10,
+      "title": "Memory, layer 2: the judgement",
+      "gate": true,
+      "summary": "Learn the trade, not the settings: accepted and rejected proposals with reasons."
+    },
+    {
+      "id": 11,
+      "title": "Delegation: the long jobs",
+      "gate": true,
+      "summary": "Generative, parametric and analytic long jobs; state on disk; exact resume."
+    },
+    {
+      "id": 12,
+      "title": "Verification and critique",
+      "gate": true,
+      "summary": "Deterministic geometric checks, plus design critique against criteria."
+    },
+    {
+      "id": 13,
+      "title": "Domain vocabularies",
+      "gate": true,
+      "summary": "Mechanical, architecture, civil, schematics, annotation — loaded only when needed."
+    },
+    {
+      "id": 14,
+      "title": "The LibreCAD live window (C++ plugin)",
+      "gate": true,
+      "summary": "Non-modal panel, loopback bridge, perception and primitives. Deliberately dumb."
+    },
+    {
+      "id": 15,
+      "title": "Non-text input",
+      "gate": true,
+      "summary": "Hand sketch, PDF, scan becomes clean DXF."
+    },
+    {
+      "id": 16,
+      "title": "Standards, scales, printing",
+      "gate": true,
+      "summary": "Scale consistency, ISO/UNI styles, title blocks, paper space."
+    },
+    {
+      "id": 17,
+      "title": "Testing, robustness, release",
+      "gate": true,
+      "summary": "Pilot cases per domain, model-size testing, installers, public release."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "P0-T01",
+      "phase": 0,
+      "title": "Decide the licence and record it in an ADR",
+      "why": "A public release depends on it. The engine is a standalone program that reads and writes DXF; only the later C++ plugin links LibreCAD's GPLv2 headers, and that is what constrains the choice.",
+      "depends_on": [],
+      "definition_of_done": [
+        "docs/adr/0004-licence.md states the conclusion with the evidence it rests on",
+        "a LICENSE file exists at the repository root and matches the ADR",
+        "the ADR says explicitly what the engine may be licensed as and what the plugin must be"
+      ],
+      "verification": "tests/test_repo_shape.py asserts LICENSE exists and that its SPDX identifier matches the one named in ADR 0004",
+      "size": "S",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": "D-001"
+    },
+    {
+      "id": "P0-T02",
+      "phase": 0,
+      "title": "Write ADR 0001 - thinking is free, the hand is guided",
+      "why": "It is the constitution of the architecture. Every later design decision is measured against it, so it must be written down before any of them are taken.",
+      "depends_on": [],
+      "definition_of_done": [
+        "the pipeline is drawn: free reasoning, design decision, validated structured intent, readable script, geometry",
+        "the two-doors rule for numbers is stated: the user dictates, or the solver computes",
+        "it says why deliberation is deliberately unconstrained, and what the narrow gate is",
+        "it states that the model never emits executable text and never a final coordinate"
+      ],
+      "verification": "tests/test_repo_shape.py asserts the ADR exists, is non-empty, and contains the two-doors rule verbatim",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P0-T03",
+      "phase": 0,
+      "title": "Write ADR 0002 - the memory model",
+      "why": "The memory is what turns the program from a tool into something that learns its user, and layer 2 is what makes rung 4 reachable. Its shape has to be fixed before anything writes to it.",
+      "depends_on": [],
+      "definition_of_done": [
+        "two layers described: the standard (values) and the judgement (how the user solves problems)",
+        "three levels with nearest-wins and reported conflicts",
+        "three fill channels: short interview, learning while working, deduction from the user's own DXF files",
+        "format: plain text, one line one decision, with provenance and date",
+        "privacy: outside the program folder, no sync, hand-exportable, never model weights",
+        "the script-versus-memory separation rule is stated"
+      ],
+      "verification": "tests/test_repo_shape.py asserts the ADR exists and names both layers and all three channels",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P0-T04",
+      "phase": 0,
+      "title": "Lay out the monorepo directories with their contracts",
+      "why": "The engine core must stay standard-library only, with ezdxf isolated in the DXF layer. A directory layout that states this is how the rule survives contact with a hurry.",
+      "depends_on": [
+        "P0-T02"
+      ],
+      "definition_of_done": [
+        "lang/ geometry/ dxf/ memory/ engine/ shared/ tests/ tools/ docs/adr/ .github/workflows/ all exist",
+        "each package has a README or module docstring stating what it may and may not import",
+        "a test asserts that engine/, lang/, geometry/ and memory/ import nothing outside the standard library"
+      ],
+      "verification": "tests/test_dependency_rules.py walks the import statements of those packages and fails on any third-party import",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P0-T05",
+      "phase": 0,
+      "title": "Prove CI green on Windows, macOS and Linux",
+      "why": "Cross-platform is a promise of the project, and CI is what keeps Marco from ever installing a toolchain. It has to be green before anything depends on it.",
+      "depends_on": [],
+      "definition_of_done": [
+        ".github/workflows/ci.yml runs the suite on windows-latest, macos-latest and ubuntu-latest",
+        "all three jobs are green on an empty-but-real suite",
+        "the render job uploads its PNGs as artefacts so every push produces pictures",
+        "lw_gh op=runs shows the run as success without a human opening a browser"
+      ],
+      "verification": "lw_gh op=runs reports conclusion=success for all three OS jobs on the current head commit",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P1-T01",
+      "phase": 1,
+      "title": "Specify the commitment form: fields and closed value lists",
+      "why": "This is the narrow gate the model commits through. If it is too rich the bridle is gone; too narrow and nothing useful can be said. Getting it wrong costs a rewrite of everything downstream.",
+      "depends_on": [
+        "P0-T02",
+        "P0-T04"
+      ],
+      "definition_of_done": [
+        "a versioned JSON schema in shared/ with fixed fields and closed value lists",
+        "one catalogue entry per vocabulary word",
+        "a validator that refuses anything outside the catalogue, with a readable reason",
+        "worked examples in all four domains: mechanical, architecture, civil, schematic"
+      ],
+      "verification": "tests/test_form.py feeds valid and invalid forms and asserts acceptance, refusal, and the wording of each refusal",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P1-T02",
+      "phase": 1,
+      "title": "Design the script language: readable, correctable, re-runnable",
+      "why": "The script is three things at once - what the agent will do, the record of what it did, and the document a human can correct and re-run. Memory, undo, reproducibility and audit collapse into one artefact.",
+      "depends_on": [
+        "P1-T01"
+      ],
+      "definition_of_done": [
+        "a written specification with worked examples someone with no programming background can read",
+        "a parser and a validator with a green suite",
+        "round-trip: parse then print returns the same text",
+        "the vocabulary of position is covered: centred on, along, offset from, between, aligned with, distributed over"
+      ],
+      "verification": "tests/test_script.py round-trips every example in the specification and asserts parser errors point at the offending line",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P1-T03",
+      "phase": 1,
+      "title": "Make design intent and alternatives expressible",
+      "why": "Without this, phase 9 has nothing to speak. The language must carry open choices and 'either this or that pending a decision', not only finished commands.",
+      "depends_on": [
+        "P1-T02"
+      ],
+      "definition_of_done": [
+        "the grammar can state an alternative and mark a choice as open",
+        "an open choice cannot be drawn until it is resolved, and the error says so",
+        "examples showing two alternatives and the resolution of one"
+      ],
+      "verification": "tests/test_intent.py asserts a script with an unresolved choice refuses to produce geometry and names the choice",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P1-T04",
+      "phase": 1,
+      "title": "Answer the blank page in the grammar",
+      "why": "Open issue C. In 3D you grow from the origin; in 2D 'a 5x4 room' has no obvious where, and 'next to it' has no obvious side. This is answered by the grammar, not improvised at runtime.",
+      "depends_on": [
+        "P1-T02"
+      ],
+      "definition_of_done": [
+        "anchoring rules written: where the first object goes, what 'next to' and 'beside' mean",
+        "every relation names its reference frame explicitly",
+        "a script with no absolute coordinate anywhere still produces one determinate drawing"
+      ],
+      "verification": "tests/test_anchoring.py asserts the same coordinate-free script renders byte-identical geometry twice, and that ambiguity is refused rather than guessed",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P1-T05",
+      "phase": 1,
+      "title": "Design the escape hatch and its boundary",
+      "why": "Open issue B. A free channel must exist for what the language cannot say, and it is the hole in the fence - so its boundary needs designing rather than improvising, and it must be visibly flagged.",
+      "depends_on": [
+        "P1-T02"
+      ],
+      "definition_of_done": [
+        "the boundary of the free channel is written down",
+        "anything that came through it is flagged in the script and in the output",
+        "a drawing containing free-channel geometry can be listed and reviewed separately"
+      ],
+      "verification": "tests/test_escape_hatch.py asserts free-channel content is always flagged and never silently mixed with validated geometry",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P2-T01",
+      "phase": 2,
+      "title": "Primitives and exact intersections",
+      "why": "After the solver, a mediocre model still produces a precise drawing. This pays back more than anything else in the project.",
+      "depends_on": [
+        "P1-T02"
+      ],
+      "definition_of_done": [
+        "points, segments, arcs, circles, ellipses with exact intersection of every pair",
+        "degenerate cases handled explicitly: parallel, tangent, coincident, zero-length",
+        "no CAD dependency; standard library only"
+      ],
+      "verification": "tests/test_geometry_primitives.py covers every pair and every degenerate case with exact expected values",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P2-T02",
+      "phase": 2,
+      "title": "Offsets, trim, extend, fillet, chamfer, tangents",
+      "why": "These are the operations a draughtsman does by hand a hundred times a day, and the ones a model must never approximate.",
+      "depends_on": [
+        "P2-T01"
+      ],
+      "definition_of_done": [
+        "each operation implemented with a stated tolerance policy",
+        "fillets and chamfers on non-perpendicular junctions",
+        "tangents between circles and from a point"
+      ],
+      "verification": "tests/test_geometry_ops.py asserts exact values on hand-computed cases",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P2-T03",
+      "phase": 2,
+      "title": "Contour closure, exactly",
+      "why": "A contour closes exactly, not almost. Hatches on open contours are a defect the whole drawing inherits.",
+      "depends_on": [
+        "P2-T01"
+      ],
+      "definition_of_done": [
+        "closed contours recognised from loose segments",
+        "guaranteed exact closure, with the tolerance policy stated and tested",
+        "an open contour is reported, never quietly closed"
+      ],
+      "verification": "tests/test_contours.py asserts closure is exact and that a nearly-closed contour is reported as open",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P2-T04",
+      "phase": 2,
+      "title": "Distributions and notable points",
+      "why": "Distributing by count or pitch is most of the tedium the agent is meant to remove, and notable points are where dimensions attach themselves automatically.",
+      "depends_on": [
+        "P2-T01"
+      ],
+      "definition_of_done": [
+        "distribution along a segment, on a circle, on a grid, by count and by pitch",
+        "notable points exposed for automatic dimension attachment"
+      ],
+      "verification": "tests/test_distributions.py asserts counts, pitches and endpoint behaviour on hand-computed cases",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P3-T01",
+      "phase": 3,
+      "title": "Write real DXF: geometry, layers, weights, dimensions, hatches",
+      "why": "DXF is the engine's home ground precisely because it can do the associative dimensions and hatches LibreCAD's plugin API cannot create at all.",
+      "depends_on": [
+        "P2-T03"
+      ],
+      "definition_of_done": [
+        "geometry, layers, line types and weights, associative dimensions, hatches, blocks, text",
+        "ezdxf confined to the dxf/ package and imported nowhere else",
+        "output opens faithfully in LibreCAD and in one other CAD"
+      ],
+      "verification": "tools/render_dxf.py renders the output and tests/test_visual.py compares it against a golden image; the agent also reads the PNG and judges it",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P3-T02",
+      "phase": 3,
+      "title": "Read a drawing somebody else made",
+      "why": "Most real CAD work is editing, not creating. A project that can only create is looking at the wrong half of the job.",
+      "depends_on": [
+        "P3-T01"
+      ],
+      "definition_of_done": [
+        "the usual DXF dialects parse without loss of what we care about",
+        "units, extents, scale, layers and blocks reported",
+        "a real drawing of Marco's parses and is described correctly"
+      ],
+      "verification": "tests/test_dxf_read.py parses fixture drawings in several dialects and asserts the reported summary",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P3-T03",
+      "phase": 3,
+      "title": "Safe round-trip: change one thing, lose nothing",
+      "why": "This is what makes editing existing drawings possible at all. Anything the agent did not touch must come out untouched.",
+      "depends_on": [
+        "P3-T02"
+      ],
+      "definition_of_done": [
+        "open, modify one entity, write back, and everything else is byte-for-byte equivalent",
+        "unknown entity types survive the round-trip",
+        "a diff tool reports exactly what changed"
+      ],
+      "verification": "tests/test_roundtrip.py asserts that the set of changed entities equals the set the test asked to change, and nothing more",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P3-T04",
+      "phase": 3,
+      "title": "Close the two open render defects: colour 7 and hatch patterns",
+      "why": "Found by the render harness on the day it was built (docs/RENDER_FINDINGS.md). Entities on a colour-7 layer render invisible, and hatch patterns produce no lines at all. Until both are fixed no golden image can honestly be blessed, and hatching is one of the two things the LibreCAD plugin API cannot do - which is the reason DXF is the engine's home ground.",
+      "depends_on": [
+        "P3-T01"
+      ],
+      "definition_of_done": [
+        "a drawing whose geometry is on an ACI colour 7 layer renders visibly on a white sheet",
+        "set_pattern_fill produces visible pattern lines in the PNG, with a solid-fill control proving the hatch path itself is drawn",
+        "the cause of each is isolated and written down, replacing the guesses in docs/RENDER_FINDINGS.md",
+        "golden images are blessed for plate, room and empty once the pictures have been looked at and judged correct"
+      ],
+      "verification": "render the fixtures, read the PNGs and confirm outline and hatching are visible; then tests/test_render_harness.py compares against the newly blessed goldens and CI is green on all three operating systems",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P4-T01",
+      "phase": 4,
+      "title": "The memory store: plain text, provenance, dates, three levels",
+      "why": "Provenance tells you what to trust, and the date matters because decisions age: a year later the agent can ask whether a rule still holds instead of applying it blindly.",
+      "depends_on": [
+        "P0-T03"
+      ],
+      "definition_of_done": [
+        "plain text, one line one decision, provenance and date on each",
+        "three levels resolved nearest-wins, with conflicts reported and never silent",
+        "stored outside the program folder; no sync, no telemetry; hand-exportable"
+      ],
+      "verification": "tests/test_memory_store.py asserts resolution order, conflict reporting, and that the file stays human-readable after a hundred writes",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P4-T02",
+      "phase": 4,
+      "title": "Channel 1: the short first-run interview",
+      "why": "Five or six questions, the ones without which nothing can be done, and then it stops. Nobody finishes a sixty-question form.",
+      "depends_on": [
+        "P4-T01"
+      ],
+      "definition_of_done": [
+        "at most six questions, each with a proposed default",
+        "the interview can be skipped entirely and the program still works",
+        "answers land in the memory with provenance 'answered by you' and a date"
+      ],
+      "verification": "tests/test_interview.py asserts the question count is capped and that skipping leaves a usable profile",
+      "size": "S",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P4-T03",
+      "phase": 4,
+      "title": "Channel 3: deduce the standard from the user's own drawings",
+      "why": "More accurate than what a user would say out loud - nobody can recite their own standard, they just draw it. This is one of the strongest ideas in the project and works for anyone who downloads it.",
+      "depends_on": [
+        "P3-T02",
+        "P4-T01"
+      ],
+      "definition_of_done": [
+        "layer names, weights, colours, text heights, dimension styles and real scales read out of DXF files",
+        "a profile Marco recognises, produced from three of his own drawings",
+        "every deduced line carries provenance 'deduced from your drawings' and a date"
+      ],
+      "verification": "tests/test_deduction.py asserts a synthetic drawing with a known standard produces exactly that standard; then Marco confirms on his own files at the phase gate",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P4-T04",
+      "phase": 4,
+      "title": "One script, two profiles, two correctly different drawings",
+      "why": "It is the proof that the script says what and the memory says how - and therefore that scripts are transferable between people.",
+      "depends_on": [
+        "P4-T03",
+        "P3-T01"
+      ],
+      "definition_of_done": [
+        "the same script rendered against two profiles produces two drawings differing only where the profiles differ",
+        "both are rendered to PNG and the difference is visible and correct"
+      ],
+      "verification": "tests/test_profiles.py asserts the geometric difference matches the profile difference exactly; the agent also reads both PNGs",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P5-T01",
+      "phase": 5,
+      "title": "Talk to Ollama: free reasoning and forced JSON, transparently",
+      "why": "Two stages deliberately different in nature. Free text where the model must think; forced JSON validated against the catalogue where it must commit.",
+      "depends_on": [
+        "P1-T01"
+      ],
+      "definition_of_done": [
+        "Ollama reached over its local HTTP API, auto-started transparently",
+        "model-agnostic, and different models usable for different stages",
+        "the reasoning stage is unconstrained text; the commitment stage is validated JSON",
+        "bounded self-correction: a fixed number of attempts, no loops"
+      ],
+      "verification": "tests/test_ollama_client.py runs against a recorded fake server so the suite needs no Ollama; lw_ollama op=probe verifies the real thing separately",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P5-T02",
+      "phase": 5,
+      "title": "The first sentence that becomes a drawing",
+      "why": "It is the moment the whole architecture either works or does not: natural language, through free reasoning, through the narrow gate, to exact geometry.",
+      "depends_on": [
+        "P5-T01",
+        "P3-T01",
+        "P4-T01",
+        "P2-T03"
+      ],
+      "definition_of_done": [
+        "'a 5x4 room with 30 walls, a door east and two windows south' becomes a correct drawing from a small local model",
+        "the same request to a larger model produces visibly better reasoning with identical precision",
+        "defaults come from the memory; what is still missing becomes a question"
+      ],
+      "verification": "the drawing is rendered to PNG and the agent reads it; dimensions are checked numerically against the request, not by eye alone",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P6-T01",
+      "phase": 6,
+      "title": "Aggregated perception, never entity by entity",
+      "why": "Real drawings hold tens of thousands of entities. Perception has to be by layer, by type, by area, or it cannot exist at all.",
+      "depends_on": [
+        "P3-T02"
+      ],
+      "definition_of_done": [
+        "summaries by layer, by type and by area, plus extents, units, scale and blocks",
+        "a drawing with 50,000 entities is described within a fixed token budget",
+        "no code path enumerates entities to the model"
+      ],
+      "verification": "tests/test_perception.py asserts the description of a 50,000-entity fixture stays under the budget and is correct",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P6-T02",
+      "phase": 6,
+      "title": "Selection semantics and cross-cutting edits",
+      "why": "'Every external wall from 30 to 25' is where the agent earns its keep, and it is impossible without selection that means something.",
+      "depends_on": [
+        "P6-T01",
+        "P1-T02"
+      ],
+      "definition_of_done": [
+        "'every external wall', 'all ground-floor doors' and similar resolve to a definite set",
+        "a cross-cutting edit applies to exactly that set and reports the count before acting",
+        "the edit is one undo step"
+      ],
+      "verification": "tests/test_selection.py asserts the resolved set on fixtures with known answers, including the empty and the everything case",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P7-T01",
+      "phase": 7,
+      "title": "Deterministic questions with proposed defaults",
+      "why": "Questions generated by the engine rather than the model work with any model, and a hard cap per request is what keeps the agent from making the user its secretary.",
+      "depends_on": [
+        "P4-T01"
+      ],
+      "definition_of_done": [
+        "questions generated by the engine, each with a proposed default and a reason",
+        "a hard cap per request, never a pop-up",
+        "every answer feeds the memory - the flywheel"
+      ],
+      "verification": "tests/test_questions.py asserts the cap holds and that an answered question is never asked again",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P7-T02",
+      "phase": 7,
+      "title": "Briefing before a long job, and session memory",
+      "why": "An eight-hour job only holds up if it does not need you during those eight hours. So everything unknown is asked up front, once.",
+      "depends_on": [
+        "P7-T01"
+      ],
+      "definition_of_done": [
+        "before a long job, every unknown is asked up front in one briefing",
+        "'the north wall I just drew' resolves in the next sentence",
+        "nothing is asked mid-job"
+      ],
+      "verification": "tests/test_briefing.py asserts no question is raised after a job starts, and that references resolve across turns",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P8-T01",
+      "phase": 8,
+      "title": "Decompose a goal into ordered features and replan on failure",
+      "why": "The project gear is what turns a goal into a drawing: plan, execute, re-perceive against the real geometry, replan. Holding the real geometry each time is the part that makes it honest.",
+      "depends_on": [
+        "P6-T02",
+        "P7-T02"
+      ],
+      "definition_of_done": [
+        "a goal becomes an ordered list of features, each one undo step",
+        "after each feature the real geometry is re-perceived and the plan is revised",
+        "explicit bounds on features and retries; cancellation honoured at every checkpoint"
+      ],
+      "verification": "tests/test_project_gear.py asserts bounds are enforced, that a forced failure triggers exactly one replan, and that cancellation leaves no half feature",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P8-T02",
+      "phase": 8,
+      "title": "Preview before commit: ghost geometry, 'like this?'",
+      "why": "Cheap in 2D, and the practical answer to an unreliable model. Together with per-feature undo it is what makes acting alone safe.",
+      "depends_on": [
+        "P8-T01"
+      ],
+      "definition_of_done": [
+        "proposed geometry appears on a temporary layer and is removable in one step",
+        "the preview is rendered to PNG so it can be judged without a GUI",
+        "accepting the preview produces exactly the previewed geometry"
+      ],
+      "verification": "tests/test_preview.py asserts accepted geometry equals previewed geometry and that rejection leaves the drawing untouched",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P9-T01",
+      "phase": 9,
+      "title": "Propose alternatives with their trade-offs",
+      "why": "Rung 4 begins here. A paragraph of argument costs seconds; a wrong drawing costs hours. This is the cheapest place in the whole system to catch an error.",
+      "depends_on": [
+        "P5-T02",
+        "P1-T03"
+      ],
+      "definition_of_done": [
+        "given a vague brief, two or three approaches come back with the trade-off of each stated plainly",
+        "the agent says what the brief is missing or where it contradicts itself",
+        "it degrades gracefully: a small model proposes one option and says so, and is never blocked and never faked"
+      ],
+      "verification": "tests/test_design_conversation.py asserts structure and honesty on recorded model replies; quality is judged by Marco at the phase gate",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P9-T02",
+      "phase": 9,
+      "title": "Argue, accept being overruled, and self-critique first",
+      "why": "A designer argues for a choice and criticises its own proposal before the user has to - without sulking and without capitulating.",
+      "depends_on": [
+        "P9-T01"
+      ],
+      "definition_of_done": [
+        "the agent argues for a recommendation and records the argument",
+        "being overruled updates the plan and the memory, and does not reopen the argument",
+        "a self-critique is produced before the proposal is shown"
+      ],
+      "verification": "tests/test_critique.py asserts a self-critique is always present and that an overrule is recorded once and respected afterwards",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P10-T01",
+      "phase": 10,
+      "title": "Record accepted and rejected proposals with their reasons",
+      "why": "A designer reasons from cases, and this is the case library. Recording the reason rather than the result is what separates remembering a standard from learning a trade.",
+      "depends_on": [
+        "P9-T02",
+        "P4-T01"
+      ],
+      "definition_of_done": [
+        "every accepted and rejected proposal stored with the reason the user gave",
+        "recurring solutions recorded as reusable typologies",
+        "the criteria by which the user calls a drawing good are recorded",
+        "same guarantees as layer 1: readable, editable, exportable, never weights"
+      ],
+      "verification": "tests/test_judgement_memory.py asserts a rejection with a reason is retrievable and never silently reapplied",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P10-T02",
+      "phase": 10,
+      "title": "Retrieve by situation, not by keyword alone",
+      "why": "Open issue E, and the hard part. Layer 2 must stay readable - no vector database - yet be found when the situation resembles a past one.",
+      "depends_on": [
+        "P10-T01"
+      ],
+      "definition_of_done": [
+        "retrieval by situation demonstrated on a case the keywords would have missed",
+        "the store stays plain readable text",
+        "the agent can say why it reused a past decision"
+      ],
+      "verification": "tests/test_judgement_retrieval.py asserts recall on a labelled case set and that every reuse carries its justification",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P11-T01",
+      "phase": 11,
+      "title": "Long jobs: state on disk and exact resume",
+      "why": "A job of tens of minutes must survive an interruption, a crash and a reboot, and a clean interruption must leave no half drawing.",
+      "depends_on": [
+        "P8-T01"
+      ],
+      "definition_of_done": [
+        "plan, completed features, decisions and pending questions persisted on disk",
+        "a job interrupted halfway, with everything closed, resumes exactly where it was",
+        "progress is inspectable throughout"
+      ],
+      "verification": "tests/test_resume.py kills a job mid-feature, restarts it, and asserts the final drawing equals the uninterrupted one",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P11-T02",
+      "phase": 11,
+      "title": "The three shapes of long job",
+      "why": "Three engines behind one handle: the huge drawing, forty variants, and standardising a drawing that already exists. The parametric one is nearly free once the language exists.",
+      "depends_on": [
+        "P11-T01"
+      ],
+      "definition_of_done": [
+        "generative: the script grows feature by feature, checkpointed",
+        "parametric: one script plus a parameter table produces forty variants",
+        "analytic: reads a drawing and proposes corrections in bulk for approval"
+      ],
+      "verification": "tests/test_long_jobs.py exercises all three and renders a sample of the variants for the agent to look at",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P12-T01",
+      "phase": 12,
+      "title": "Geometric verification, deterministic",
+      "why": "Useful on its own, on drawings other people made. It is also the fourth independent check that makes the agent's autonomy honest rather than reckless.",
+      "depends_on": [
+        "P3-T02",
+        "P2-T03"
+      ],
+      "definition_of_done": [
+        "detects open contours, duplicates, zero-length segments, wrong layers, text out of scale, dimensions that do not match their geometry, hatches on open contours",
+        "safe cases repaired automatically, the rest reported",
+        "runs on a drawing the agent did not make"
+      ],
+      "verification": "tests/test_checker.py runs against fixtures seeded with each defect and asserts every one is found and none is invented",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P12-T02",
+      "phase": 12,
+      "title": "Design critique against criteria",
+      "why": "Open issue F. To critique its own work the agent needs standards to judge against - partly from norms, partly from memory layer 2.",
+      "depends_on": [
+        "P12-T01",
+        "P10-T01"
+      ],
+      "definition_of_done": [
+        "criteria expressed in a readable form, per domain",
+        "the agent says whether the layout works, whether the part is manufacturable, what is missing",
+        "criteria from norms and criteria from the user are distinguishable"
+      ],
+      "verification": "tests/test_design_critique.py asserts each criterion fires on a case that violates it and stays silent on one that does not",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P13-T01",
+      "phase": 13,
+      "title": "Domain vocabularies, loaded only when needed",
+      "why": "So the prompt never outgrows a small model. Each domain is a separate module, and only the one in use is present.",
+      "depends_on": [
+        "P1-T01",
+        "P5-T02"
+      ],
+      "definition_of_done": [
+        "mechanical, architecture, civil, schematics and annotation as separate modules",
+        "only the module in use is loaded, and the prompt size is measured to prove it",
+        "each domain has a worked pilot case"
+      ],
+      "verification": "tests/test_domains.py asserts module isolation and that the loaded prompt size stays within budget per domain",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P14-T01",
+      "phase": 14,
+      "title": "The C++ plugin and its loopback bridge",
+      "why": "The live window: watch it draw, undo per feature, on-screen highlighting, perception of the selection. Deliberately dumb, because it is the only part compiled for three operating systems.",
+      "depends_on": [
+        "P6-T01"
+      ],
+      "definition_of_done": [
+        "non-modal panel, TCP loopback bridge with a token, JSON-RPC 2.0",
+        "perception of the open document and the selection; primitives; undo per feature; highlighting",
+        "panel persistence after execComm resolved, and binary compatibility with official builds",
+        "prebuilt binaries per platform produced by CI, so Marco never installs Qt, CMake or MSVC"
+      ],
+      "verification": "CI builds the plugin on all three platforms and lw_gh op=artifacts lists the binaries; lw_install then puts it into LibreCAD for one real GUI run",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P14-T02",
+      "phase": 14,
+      "title": "The command-line channel as the safety net",
+      "why": "LibreCAD can load a text file of commands. Blind, but it works on a stock install, for users who cannot install a plugin.",
+      "depends_on": [
+        "P3-T01"
+      ],
+      "definition_of_done": [
+        "a script becomes a LibreCAD command file",
+        "it works on a stock install with nothing added",
+        "its limits relative to the DXF channel are documented"
+      ],
+      "verification": "tests/test_command_channel.py asserts the generated command file matches a golden file; one real run in LibreCAD at the phase gate",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P15-T01",
+      "phase": 15,
+      "title": "Sketch, PDF or scan becomes clean DXF",
+      "why": "Open issue D. 2D is exactly where vision models work, and this may be the most useful capability of all. Additive, not foundational.",
+      "depends_on": [
+        "P3-T01"
+      ],
+      "definition_of_done": [
+        "a photographed hand sketch becomes geometry a human recognises",
+        "an old PDF plan becomes layered DXF",
+        "what was inferred rather than measured is flagged"
+      ],
+      "verification": "the output is rendered beside the input image and the agent compares the two; inferred dimensions are listed explicitly",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P16-T01",
+      "phase": 16,
+      "title": "Scales, standards and printing, consistently",
+      "why": "A text height that ignores the print scale makes a technically correct drawing useless, and consistency is exactly the kind of thing a machine should guarantee.",
+      "depends_on": [
+        "P3-T01",
+        "P4-T01"
+      ],
+      "definition_of_done": [
+        "representation scales consistent with text heights and dimensions",
+        "ISO and UNI dimension and hatch styles",
+        "line weights and types per layer; parametric title blocks and tables; paper space and print layouts"
+      ],
+      "verification": "tests/test_scales.py asserts consistency across three scales and the render harness produces a printable sheet for the agent to inspect",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P17-T01",
+      "phase": 17,
+      "title": "Pilot cases, model-size testing, and where each rung becomes reachable",
+      "why": "The ceiling rises with the model, so the honest thing is to measure at which model size each rung of the autonomy ladder actually arrives, and publish it.",
+      "depends_on": [
+        "P12-T02",
+        "P13-T01"
+      ],
+      "definition_of_done": [
+        "one real pilot case per domain, run end to end by an automated harness",
+        "the same cases run across model sizes, with results tabulated",
+        "the table says which rung is reachable at which size"
+      ],
+      "verification": "the harness is run in CI where it can be, and on Marco's machine for the model-dependent parts via lw_ollama; the table is regenerated, not hand-written",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    },
+    {
+      "id": "P17-T02",
+      "phase": 17,
+      "title": "Installers, documentation and public release",
+      "why": "Free and public on GitHub, cross-platform, is the declared ambition. A project nobody can install is not released.",
+      "depends_on": [
+        "P17-T01",
+        "P14-T01"
+      ],
+      "definition_of_done": [
+        "installers for three platforms produced by CI",
+        "documentation, a test guide and a demo video",
+        "public release and an announcement to the LibreCAD and wider CAD communities"
+      ],
+      "verification": "a clean machine installs from the artefact and runs one pilot case; CI proves the artefacts exist for all three platforms",
+      "size": "L",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": ""
+    }
+  ]
+}

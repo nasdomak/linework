@@ -1,0 +1,11 @@
+# Development and tooling dependencies only.
+#
+# The engine core (engine/, lang/, geometry/, memory/) imports nothing outside
+# the standard library -- CI enforces it. ezdxf is confined to dxf/ and tools/;
+# matplotlib, numpy and pillow exist for the render and visual-regression
+# harness; pytest runs the headless suite.
+ezdxf>=1.4
+matplotlib>=3.8
+numpy>=1.26
+pillow>=10.0
+pytest>=8.0

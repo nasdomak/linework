@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "note": "The decision queue. The loop never blocks on a question: it queues it here with a proposed default and a rationale, carries on with everything the question does not block, and on the next run takes the default if Marco has not answered - recording it as a reversible decision and flagging it in the report. Anything irreversible has reversible=false and waits, however long it takes.",
+  "open": [
+    {
+      "id": "D-001",
+      "raised": "2026-09-17",
+      "question": "Which licence does linework carry?",
+      "context": "The project is meant to be free and public. The engine is a standalone Python program that reads and writes DXF and links nothing of LibreCAD's. Only the later C++ plugin (product phase 14) links LibreCAD's headers, and LibreCAD is GPL v2. A repository published without a licence file is 'all rights reserved' by default, which contradicts the stated ambition.",
+      "proposed_default": "GPL-2.0-or-later for the whole repository",
+      "rationale": "It is the licence that keeps every door open. GPL-2.0-or-later can be combined with LibreCAD's GPL v2 code when phase 14 arrives, which GPL-3.0-only cannot, and it matches the ecosystem the project plugs into. A permissive licence would also be legal for the engine alone but would have to change, or split, when the plugin appears - and a licence change across a public history is painful.",
+      "reversible": true,
+      "reversible_why": "Marco is the sole copyright holder until there is an outside contributor, so the licence can still be changed by a commit. Once someone else contributes under it, it cannot. This is therefore reversible NOW and stops being so later, which is a reason to decide it early rather than to leave it open.",
+      "not_legal_advice": "This is a reading of the documents and of common practice, not legal advice. If the licence matters commercially, a lawyer should confirm it.",
+      "blocks": ["P0-T01"],
+      "decide_by": "before the first outside contribution"
+    }
+  ],
+  "settled": [
+    {
+      "id": "D-000",
+      "question": "Where does the repository working copy live on Marco's machine?",
+      "chosen": "%USERPROFILE%\\linework",
+      "by": "claude",
+      "when": "2026-09-17",
+      "rationale": "Off kDrive. The cloud-synced folder can hand out half-written files before sync settles, and the repository is the source of truth. The kDrive folder keeps the prose documents from session 1.",
+      "reversible": true
+    }
+  ]
+}

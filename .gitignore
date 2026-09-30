@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Rendered output and downloaded CI artefacts are reproducible: only the
+# golden images under tests/golden/ are kept.
+out/
+_artifacts/
+*.diff.png
+
+# Generated test drawings: tests/fixtures/make_fixtures.py rebuilds them, and a
+# DXF in git is a blob nobody can review.
+tests/fixtures/*.dxf
+
+# Secrets never live in this repository. The GitHub token is kept at
+# %USERPROFILE%\.linework\github_token, outside the tree, on purpose.
+*.token
+.env
