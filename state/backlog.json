@@ -204,9 +204,9 @@
         ".github/workflows/ci.yml runs the suite on windows-latest, macos-latest and ubuntu-latest",
         "all three jobs are green on an empty-but-real suite",
         "the render job uploads its PNGs as artefacts so every push produces pictures",
-        "lw_gh op=runs shows the run as success without a human opening a browser"
+        "tools/ci_status.py shows the run as success, with the test count of every job, without a human opening a browser"
       ],
-      "verification": "lw_gh op=runs reports conclusion=success for all three OS jobs on the current head commit",
+      "verification": "python tools/ci_status.py exits 0 for the current head commit: every job success, and each test job's published count shows no failure; python tools/ci_status.py renders fetches the pictures for that commit and they are looked at",
       "size": "M",
       "status": "todo",
       "blocked_reason": "",

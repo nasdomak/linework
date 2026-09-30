@@ -10,7 +10,16 @@
 #   render      the fixture drawings rendered to PNG and uploaded as artefacts,
 #               so every push leaves pictures behind that can be looked at.
 #
-# A session reads the result itself (backlog task P0-T05): it never assumes green.
+# A session reads the result itself with tools/ci_status.py (backlog task
+# P0-T05): it never assumes green. The cloud session can reach the GitHub API
+# and git, but not the blob storage GitHub serves logs and artefacts from, so
+# the results are also published where it CAN read them:
+#
+#   - every test job ends with an annotation titled "pytest <os> py<ver>" that
+#     carries pytest's own count line, plus one error annotation per failure;
+#   - on main, the render job force-pushes the pictures and their numbers to
+#     the branch "ci-renders" (one commit, replaced every run: it is a mailbox,
+#     not history -- the history of the pictures is in the artefacts).
 
 name: ci
 
@@ -31,8 +40,8 @@ jobs:
     name: plan and rules
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
       - name: The executable plan is coherent
@@ -51,8 +60,8 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python: ["3.11", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
           cache: pip
@@ -62,16 +71,21 @@ jobs:
       - name: The engine core imports nothing outside the standard library
         run: python tools/check_core_imports.py
       - name: Headless suite
-        run: python -m pytest -q -rs
+        run: python -m pytest -q -rs --junitxml=junit.xml
+      - name: Publish the count as an annotation the session can read
+        if: always()
+        run: python tools/ci_report.py junit.xml "pytest ${{ matrix.os }} py${{ matrix.python }}"
       - name: The stdlib-only runner agrees with pytest
         run: python tools/run_tests.py
 
   render:
     name: render the fixtures
     runs-on: ubuntu-latest
+    permissions:
+      contents: write          # only to publish the ci-renders mailbox branch
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
           cache: pip
@@ -87,11 +101,23 @@ jobs:
             name=$(basename "$f" .dxf)
             python tools/render_dxf.py "$f" "out/$name.png" --dpi 120 --stats > "out/$name.json"
           done
+          echo "${GITHUB_SHA}" > out/SOURCE_SHA
           ls -la out
       - name: Upload the pictures
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: renders-${{ github.sha }}
           path: out/
           if-no-files-found: error
           retention-days: 30
+      - name: Publish the pictures to the ci-renders branch
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd out
+          git init -q -b ci-renders
+          git add .
+          git -c user.name="linework-ci" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -q -m "Renders for ${GITHUB_SHA}"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" ci-renders

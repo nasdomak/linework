@@ -95,5 +95,5 @@ def test_ci_workflow_covers_three_systems_and_the_enforced_checks():
         assert os_name in ci, os_name
     for step in ("tools/loop.py check", "tools/sync_plan.py check",
                  "tools/check_core_imports.py", "pytest",
-                 "actions/upload-artifact"):
+                 "actions/upload-artifact", "tools/ci_report.py", "ci-renders"):
         assert step in ci, "CI does not run: %s" % step
