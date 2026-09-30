@@ -2,13 +2,11 @@
 
 > Living memory. Read in full at the start of every session, updated at every
 > checkpoint. Overwrite what is obsolete so the file stays short. Frozen
-> decisions belong in `docs/adr/`.
-> The FreeCAD Agent folder (`…/000009___Freecad_copilot`) is **read-only
-> reference input** and must never be modified.
+> decisions belong in `docs/adr/`; operating rules and traps in `CLAUDE.md`;
+> the procedure in `PROMPT.md`.
 >
-> **Every claim here must have been verified, not assumed.** Session 2 wrote
-> "everything committed" and "CI written" when neither was true; session 3
-> found out by looking. Write what you measured, and say when you measured it.
+> **Every claim here must have been measured, not assumed**, with the date.
+> Session 2 wrote "everything committed" and "CI written" when neither was true.
 
 ---
 
@@ -18,151 +16,122 @@
 readable recipes, and executes them without getting a single number wrong.**
 
 The goal is **the drawing and productivity** — not LibreCAD, which is one window
-onto the work and not the protagonist. **The declared ambition is rung 4: an
-autonomous designer.** Everything local, via Ollama. Free public release on
-GitHub. Domain: all of 2D. Completeness is the north star.
-
-The project is named **`linework`** (Marco, 17/09/2026). The repository is
-**public from the start** (his decision): `https://github.com/nasdomak/linework`.
+onto the work. **The declared ambition is rung 4: an autonomous designer.**
+Everything local, via Ollama. Free public release on GitHub. Domain: all of 2D.
+Completeness is the north star. Name **`linework`** (Marco, 17/09/2026).
 
 ---
 
 ## Standing rules
 
-1. **Start of session:** read this file in full, plus `PROMPT.md` and
-   `python tools/loop.py status`, before any action.
-2. **Checkpoints:** after every completed logical step and before pausing,
-   update this file, overwriting what is obsolete.
-3. Never ask Marco for information already written here.
-4. **Language:** the whole project is in **English** — code, comments, docs,
-   ADRs, commits. **Only the live conversation with Marco is in Italian**, in
-   plain simple words, with any command he must run himself ready to paste, one
-   at a time, preferably as a file he can double-click.
-5. **`PROMPT.md` is the standing session prompt** and never changes. A numbered
-   `0N_PROMPT_SessionN.md` in the kDrive folder is written only while the
-   workbench is unfinished, as a fallback.
-6. **File hygiene.** Documents are updated in place, never renamed: a stable
-   filename is what a fresh session can find.
+1. **Start of session:** follow `PROMPT.md`. It says what to read and in what order.
+2. **Checkpoints:** after every completed logical step, update this file,
+   overwriting what is obsolete.
+3. Never ask Marco for information already written here or in `CLAUDE.md`.
+4. **Language:** the project is in **English**; only the live conversation with
+   Marco is in Italian, plain and simple, numbered steps, a file to click rather
+   than a command to paste.
+5. **File hygiene.** Documents are updated in place, never renamed.
 
 ---
 
-## Current status
+## Current status (30/09/2026, end of session 3)
 
-**Phase: FINISHING THE WORKBENCH — session 3 (29-30/09/2026). No product code yet.**
+**Workbench: finished except the live demonstration of one autonomous run,
+which was scheduled at the end of session 3 (see "Last action").
+Product: phase 0, 4 of 5 tasks done. Next: P0-T04, then the gate to phase 1.**
 
-### Measured at the start of session 3 (29/09/2026)
+### Measured this session
 
-- The repository had **zero commits**: every file untracked. Session 2's
-  "everything committed" was false.
-- `.github/workflows/ci.yml` **did not exist**. Session 2's "CI written" was false.
-- **`device_bash` works again** on "dexter": both connected folders mount at
-  `$HOME/mnt/000002___Librecad` and `$HOME/mnt/linework`, read and write.
-  Deletion is gated; `device_request_delete_permission` on the folder root
-  grants it for the rest of the session (needed by git for `index.lock`).
-- The **`linework` local plugin is NOT loaded**: the device reports only a
-  `Blender` local MCP server and no `lw_*` tool exists. The package is at
-  `…\000002___Librecad\Claude outputs\linework.plugin`. Decision with Marco
-  (30/09/2026): **keep it separate** from his personal `marco-ascani` plugin and
-  do not install it now — see "GitHub" below for why it is no longer on the
-  critical path.
+- **GitHub is the source of truth** and the loop runs in the cloud:
+  `https://github.com/nasdomak/linework`, public, created 30/09/2026 from the
+  built-in browser. Marco linked GitHub to Claude and installed the Claude
+  GitHub App on `nasdomak`, **this repository only**. `add_repo` (access
+  `push`) then gives a cloud session push access: verified by pushing three
+  commits and comparing `git rev-parse HEAD` with `git ls-remote origin main`.
+  **No token, no local plugin, no PC left on at night.**
+- **CI is green on all 8 jobs** (commit `0823a6a`): plan and rules, render, and
+  pytest on ubuntu/windows/macos × Python 3.11/3.13 — **41 passed, 0 failed,
+  0 skipped on each of the six**, read back by `tools/ci_status.py` without a
+  browser.
+- **The pictures CI drew were looked at** (`tools/ci_status.py renders`): plate
+  and room show holes, openings, text and dimension text, but **not** the plate
+  outline, the room walls, the dimension lines, or the hatch pattern. These are
+  the open render defects of P3-T04, now confirmed on Linux too
+  (`docs/RENDER_FINDINGS.md`). The ink test passes anyway: it measures some ink,
+  not the right ink.
+- **Licence: GPL-2.0-or-later** (D-001), taken as the loop's reversible default
+  after 12 days unanswered. ADR 0004. Changeable by Marco **until the first
+  outside contribution is merged**.
+- `device_bash` on "dexter" works (mounted both folders, read, wrote, deleted
+  after permission). The local mirror `C:\Users\ascan\linework` was in sync with
+  GitHub at commit `20bdbac` and is **not** updated automatically; GitHub wins.
+- PyPI answers 403 in the cloud container and in the `device_bash` VM: the full
+  suite runs only in CI. `tools/run_tests.py` runs the stdlib-only tests
+  anywhere (31 of the 41).
 
-### Environment facts for this project (verified 29-30/09/2026)
+### Built and verified
 
-| What | Where it works | Where it does not |
-|---|---|---|
-| Files and **local git** in `C:\Users\ascan\linework` | `device_bash` (a Linux VM on dexter; git 2.x, python3.10, stdlib + numpy/matplotlib/pillow) | — |
-| `ezdxf`, `pytest` | only in Marco's Windows Python (`py`) | not in the cloud container, not in the `device_bash` VM: **PyPI returns 403 from both** (30/09) |
-| GitHub over HTTPS | nowhere from a shell yet | cloud container and `device_bash` VM both get **403 on CONNECT** (29/09) |
-| GitHub in the browser | the built-in browser pane, signed in as **`nasdomak`** by Marco; the site is "high-risk", so **every single action needs Marco's "Allow"** | — |
-
-**Consequence for verification:** the headless suite that needs `ezdxf` cannot
-run in any shell this session can reach. Tests written from session 3 on are
-plain `assert` functions with no third-party import where possible, runnable by
-`tools/run_tests.py` without pytest; CI runs the full suite with pytest.
-
-### GitHub — the path changed in session 3
-
-The session now has an **`add_repo` tool** (it did not exist in session 2). It
-grants the cloud container push access to a named repository, which removes the
-need for the token, `lw_git`, `lw_gh`, and Marco's PC being on at night.
-It needs Marco's GitHub account linked to Claude
-(claude.ai → Settings → Connectors → GitHub, as **`nasdomak`**). On 30/09 it
-answered `permission_denied: link your GitHub account` — waiting on that link.
-
-Fallback if linking does not work: the old plan (token + `lw_git`/`lw_gh` from
-the local plugin).
-
-**His SSH key on GitHub authenticates as `invimak`, not `nasdomak`.** Two
-different accounts; everything for this project is `nasdomak`.
-
-### Built and present in the repository
-
-- **The executable plan**: `state/backlog.json` — 45 tasks, 18 phases, each with
-  dependencies, a definition of done and a way to verify it. `tools/loop.py
-  check` enforces that.
-- **The loop state machine**: `tools/loop.py` (standard library only).
-- **The decision queue**: `state/decisions.json`.
-- **The standing session prompt**: `PROMPT.md`.
-- **The render and visual-regression harness**: `tools/render_dxf.py`,
-  `tools/visual_check.py`, `tests/fixtures/make_fixtures.py`. Session 2 reports
-  18 headless tests green on dexter on 17/09 (not re-run since: no `ezdxf`
-  reachable, see above).
-
-### Not built yet
-
-See `state/backlog.json` phase 0 and the session-3 checklist in the kDrive
-`03_PROMPT_Session3.md`: CI, licence ADR, ADR 0001/0002, `docs/` plan copy and
-`tools/sync_plan.py`, first push, scheduled trigger, end-to-end demonstration.
+- The executable plan (`state/backlog.json`, 45 tasks, 18 phases), the loop
+  (`tools/loop.py`), the decision queue, the standing prompt (`PROMPT.md`, now
+  cloud-native), the operating rules (`CLAUDE.md`).
+- ADR 0001 (thinking is free, the hand is guided), ADR 0002 (the memory model),
+  ADR 0004 (licence); index in `docs/adr/README.md`.
+- `docs/ACTION_PLAN.md` (living copy of the plan) and
+  `docs/BRAINSTORMING_SUMMARY.md`; `tools/sync_plan.py` keeps plan and backlog
+  in agreement, enforced in CI.
+- `tools/check_core_imports.py` (engine core is stdlib-only, enforced in CI).
+- CI (`.github/workflows/ci.yml`), `tools/ci_report.py` (test counts as
+  annotations), `tools/ci_status.py` (reads jobs, counts, pictures), the
+  `ci-renders` branch (pictures per commit).
+- The render and visual-regression harness from session 2.
 
 ---
 
 ## Critical data
 
-- Repository working copy (**the source of truth**): `C:\Users\ascan\linework`
-  — deliberately **off kDrive**, because cloud sync can hand out half-written
-  files. Git identity: `Marco Ascani <nasdomak@users.noreply.github.com>`.
-- Remote: `https://github.com/nasdomak/linework` (created 30/09/2026, empty).
-- Prose documents (kDrive): `C:\Users\ascan\kDrive\003_Sigic\001_Progetti\000002___Librecad`
+- Source of truth: `https://github.com/nasdomak/linework`, branch `main`.
+  Commit identity `Marco Ascani <nasdomak@users.noreply.github.com>`.
+- Local mirror on Marco's PC: `C:\Users\ascan\linework`.
+- Prose from session 1 and the fallback session prompts (kDrive):
+  `C:\Users\ascan\kDrive\003_Sigic\001_Progetti\000002___Librecad`.
 - FreeCAD reference (**READ-ONLY, NEVER MODIFY**):
-  `C:\Users\ascan\kDrive\003_Sigic\001_Progetti\000009___Freecad_copilot`
-- GitHub token (only if the fallback is ever needed):
-  `C:\Users\ascan\.linework\github_token` — never in chat, never committed.
-  `install_token.bat` is in the kDrive folder for that case.
+  `C:\Users\ascan\kDrive\003_Sigic\001_Progetti\000009___Freecad_copilot`.
+- The session-2 local plugin package: `…\000002___Librecad\Claude outputs\linework.plugin`
+  (not installed; returns in phases 5/14). `install_token.bat` in the kDrive
+  folder is obsolete (no token is needed).
 - Claude Project attached: **2026_006___Librecad**.
-
-### Marco's machine "dexter", measured 17/09/2026
-
-Windows 11 · Python 3.13.7 (`py` launcher) · git 2.54.0 · Ollama 0.34.1 ·
-LibreCAD at `C:\Program Files (x86)\LibreCAD` · `ezdxf` 1.4.4 and `pytest` 9.1.1 ·
-matplotlib 3.10.8 · numpy 2.4.1 · no `gh`, no `cmake`.
+- Marco's machine "dexter" (17/09/2026): Windows 11, Python 3.13.7 (`py`),
+  git 2.54.0, Ollama 0.34.1, LibreCAD at `C:\Program Files (x86)\LibreCAD`,
+  `ezdxf` 1.4.4, `pytest` 9.1.1.
 
 ---
 
 ## Open issues (product design, from session 1)
 
 - **A** The script language — the bridle on the hand. *(P1-T01..T05.)*
-- **B** The escape hatch: what happens when something cannot be said.
-- **C** The blank page: where the first object goes, what "next to it" means.
-- **D** Non-text input: sketch photo, PDF, scan → clean DXF. *(Phase 15.)*
-- **E** Memory retrieval — layer 2 is harder than layer 1 and needs design.
-- **F** Design criteria: what the agent critiques its own work against.
-- **H** Plugin binary compatibility and panel persistence after `execComm`.
-  *(Phase 14.)*
+- **B** The escape hatch. **C** The blank page. **D** Non-text input *(phase 15)*.
+- **E** Memory retrieval for layer 2. **F** Design criteria.
+- **H** Plugin binary compatibility and panel persistence *(phase 14)*.
 
 ---
 
 ## Last action
 
-Session 3, 30/09/2026: corrected this file against the measured state; created
-the GitHub repository from the built-in browser; asked Marco to link GitHub.
+Session 3, 29-30/09/2026: corrected this file against the measured state;
+first commits; licence, ADR 0001/0002/0004; CI green on three systems; plan
+sync; CI results readable from the cloud; `PROMPT.md` and `CLAUDE.md` rewritten
+for the cloud loop; the loop switched on (`loop_enabled: true`) for the
+demonstration run; a scheduled task created to run the loop unattended.
 
 ---
 
 ## Next steps
 
-1. Commit everything that exists (local git over `device_bash`).
-2. CI workflow, licence ADR (D-001), ADR 0001 and 0002, `docs/` plan copy and
-   `tools/sync_plan.py`.
-3. When GitHub is linked: `add_repo`, push, read CI, fix until green.
-4. Scheduled trigger and one end-to-end autonomous task.
-5. Then product phase 0 via the loop.
+1. The scheduled run takes **P0-T04** (monorepo layout) end to end with nobody
+   watching: work, verify, commit, push, read CI, report. Then it reaches the
+   gate to phase 1 and stops.
+2. At the gate Marco looks at phase 0 and says "vai" for phase 1 (the language),
+   the riskiest phase of the project.
+3. Open the upstream conversation with LibreCAD about `addDimension` /
+   `addHatch` when convenient: long lead time, nothing depends on it.

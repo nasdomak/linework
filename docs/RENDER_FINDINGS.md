@@ -84,6 +84,25 @@ This matters more than it looks: hatching is one of the two things LibreCAD's
 plugin API cannot do at all, and therefore one of the reasons DXF is the
 engine's home ground. If it cannot be rendered, it cannot be verified.
 
+## Confirmed by CI, 30/09/2026
+
+The first CI run to publish pictures (commit `0823a6a`, `ci-renders` branch)
+shows the same picture on Linux as session 2 saw on Windows, which rules out a
+platform quirk:
+
+- **Issue 4 holds**: the plate outline (layer `OUTLINE`) and the room walls are
+  not drawn.
+- **Issue 5 holds**: the pocket shows its boundary but no ANSI31 pattern lines.
+- **New, probably the same cause as 4**: the dimension lines and extension lines
+  are missing too; only the arrow ticks and the text (`120`, `80`, `5000`,
+  `4000`) appear. The `DIM` layer is also colour 7.
+
+All six test jobs were green at the same time (41 passed on each), including
+`test_render_puts_ink_on_the_page`. That test measures *some* ink, not *the
+right* ink: it cannot see a missing outline when the holes and text are there.
+The pictures caught what the numbers could not, which is the point of looking.
+Stays with P3-T04.
+
 ## Golden images
 
 **None have been blessed.** Deliberately. A golden image is a claim that a

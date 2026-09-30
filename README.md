@@ -102,14 +102,15 @@ self-verifying, with persistent memory, steered by natural language. If it
 cannot be made to work here, it has no business being shipped to anyone.
 
 ```
-py tools/loop.py status        where the loop is, in one screen
-py tools/loop.py next          the next unblocked task
-py tools/loop.py check         is the plan still coherent
-py tools/loop.py report        the thirty-second digest
+python tools/loop.py status    where the loop is, in one screen
+python tools/loop.py next      the next unblocked task
+python tools/loop.py check     is the plan still coherent
+python tools/loop.py report    the thirty-second digest
+python tools/ci_status.py      what CI said about the last commit, read by the agent itself
 ```
 
-- `PROMPT.md` is the standing session prompt. It never changes, so it is never
-  pasted again.
+- `PROMPT.md` is the standing session prompt. It is never pasted: a session,
+  or a schedule, starts from it.
 - `state/backlog.json` is the single answer to "what is next". A session reads
   it; it never asks.
 - `state/decisions.json` is the decision queue: the loop never blocks on a
@@ -119,9 +120,12 @@ py tools/loop.py report        the thirty-second digest
   a PNG the agent reads itself, with cluster-based golden-image comparison so a
   visual regression fails a test instead of needing a human to notice.
 
-The `linework` plugin (installed separately on the developer's machine) provides
-the hands: files including delete, git with server-built commit messages, the
-GitHub API, tests, rendering, LibreCAD and Ollama.
+The loop runs in the cloud: a session clones this repository, follows
+`PROMPT.md`, pushes its work, and reads CI back with `tools/ci_status.py` --
+including the pictures CI drew, which the render job publishes on the
+`ci-renders` branch. `CLAUDE.md` holds the operating rules and the traps already
+paid for. A local plugin for the developer's machine returns when the product
+needs to drive Ollama and LibreCAD there.
 
 ## Running the tests
 

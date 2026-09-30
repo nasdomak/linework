@@ -208,7 +208,7 @@
       ],
       "verification": "python tools/ci_status.py exits 0 for the current head commit: every job success, and each test job's published count shows no failure; python tools/ci_status.py renders fetches the pictures for that commit and they are looked at",
       "size": "M",
-      "status": "todo",
+      "status": "done",
       "blocked_reason": "",
       "decision": ""
     },
