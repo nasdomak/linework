@@ -37,7 +37,7 @@ Completeness is the north star. Name **`linework`** (Marco, 17/09/2026).
 
 ## Current status (01/10/2026, run 2)
 
-**Phase 1 (the language) open: Marco said "vai" on 30/09. P1-T01 done.**
+**Phase 1 (the language) open: Marco said "vai" on 30/09. P1-T01 and P1-T02 done.**
 
 ### Measured in run 2 (01/10/2026)
 
@@ -57,6 +57,16 @@ Completeness is the north star. Name **`linework`** (Marco, 17/09/2026).
   English and Italian, count as said). Known accepted limit: "120 x 80"
   committed as width 80, height 120 passes the form; the script and the
   picture are where that is caught.
+
+- **P1-T02 done -- the script language** (ADR 0006, spec `docs/SCRIPT.md`).
+  One line = one form as a sentence (`add window w1: on wall_north, centred on
+  wall_north, width 120 cm`). `lang/script.py` parses, prints (exact round-trip
+  in the canonical layout), writes only accepted forms, checks top to bottom;
+  errors carry line and column. `tests/test_script.py`, 18 tests. **CI green
+  on all 8 jobs for `1220f69`: 99 passed, 0 failed, 0 skipped on each.**
+- Found by P1-T02 and fixed in `lang/form.py`: `known={}` (an empty drawing)
+  was read as "no drawing", so references to missing objects passed.
+- Trap recorded in `CLAUDE.md`: mutation checks can read a stale `.pyc`.
 
 ### Measured in run 1 (30/09/2026)
 
@@ -142,14 +152,14 @@ Completeness is the north star. Name **`linework`** (Marco, 17/09/2026).
 
 ## Last action
 
-01/10/2026, run 2: "vai" opened phase 1; P1-T01 (the commitment form) done,
-verified, CI green.
+01/10/2026, run 2: "vai" opened phase 1; P1-T01 (the commitment form) and
+P1-T02 (the script language) done, verified, CI green.
 
 ---
 
 ## Next steps
 
-1. P1-T02 -- the script language, written by the engine from accepted forms.
-   Then P1-T03..T05. The loop stops at the gate to phase 2.
+1. P1-T03 (intent and alternatives), P1-T04 (the blank page), P1-T05 (the
+   escape hatch). The loop stops at the gate to phase 2.
 2. Open the upstream conversation with LibreCAD about `addDimension` /
    `addHatch` when convenient: long lead time, nothing depends on it.

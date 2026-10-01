@@ -249,7 +249,7 @@
       ],
       "verification": "tests/test_script.py round-trips every example in the specification and asserts parser errors point at the offending line",
       "size": "L",
-      "status": "doing",
+      "status": "done",
       "blocked_reason": "",
       "decision": ""
     },
