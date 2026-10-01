@@ -11,3 +11,11 @@ CORE package: tools/check_core_imports.py and tests/test_dependency_rules.py enf
 
 The same contract is stated in `lang/__init__.py`; the repository table is in
 the root `README.md`, "Repository layout".
+
+## What is here
+
+- `form.py` -- the commitment form (ADR 0005): `validate(form, user_text, known)`
+  refuses anything outside the catalogue with a readable reason. Also
+  `python3 -m lang.form write|verify|check`.
+- `examples/forms/` -- worked forms in the four domains, accepted and refused,
+  each refusal stated word for word. Checked by `tests/test_form.py`.

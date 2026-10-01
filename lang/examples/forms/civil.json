@@ -1,0 +1,331 @@
+{
+  "domain": "civil",
+  "note": "A plot with a road, parking and a sewer.",
+  "examples": [
+    {
+      "title": "A plot anchored at the origin",
+      "user_text": "a plot 30 by 45 m",
+      "known": {},
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "civil",
+        "act": "add",
+        "object": {
+          "kind": "plot",
+          "name": "plot1"
+        },
+        "relations": [
+          {
+            "relation": "at",
+            "to": [
+              "origin"
+            ]
+          }
+        ],
+        "dimensions": {
+          "width": {
+            "value": 30,
+            "unit": "m",
+            "said": "30 by 45 m"
+          },
+          "length": {
+            "value": 45,
+            "unit": "m",
+            "said": "30 by 45 m"
+          }
+        },
+        "text": "Plot 1"
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "title": "A road along the plot",
+      "user_text": "a 6 m road along the south side of the plot",
+      "known": {
+        "plot1": "plot"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "civil",
+        "act": "add",
+        "object": {
+          "kind": "road",
+          "name": "road1"
+        },
+        "relations": [
+          {
+            "relation": "along",
+            "to": [
+              "plot1"
+            ],
+            "side": "below"
+          }
+        ],
+        "dimensions": {
+          "width": {
+            "value": 6,
+            "unit": "m",
+            "said": "a 6 m road"
+          }
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "title": "Parking bays sized by the standard",
+      "user_text": "twelve parking bays along the road, inside the plot",
+      "known": {
+        "plot1": "plot",
+        "road1": "road"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "civil",
+        "act": "add",
+        "object": {
+          "kind": "parking_bay",
+          "name": "bays"
+        },
+        "relations": [
+          {
+            "relation": "distributed_over",
+            "to": [
+              "road1"
+            ],
+            "count": {
+              "value": 12,
+              "said": "twelve parking bays"
+            }
+          },
+          {
+            "relation": "along",
+            "to": [
+              "road1"
+            ],
+            "side": "above"
+          }
+        ],
+        "reason": "Bay size comes from the standard in memory."
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "title": "A sewer between two manholes",
+      "user_text": "a 300 mm sewer from MH1 to MH2",
+      "known": {
+        "mh1": "manhole",
+        "mh2": "manhole"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "civil",
+        "act": "add",
+        "object": {
+          "kind": "pipe",
+          "name": "sewer1"
+        },
+        "relations": [
+          {
+            "relation": "between",
+            "to": [
+              "mh1",
+              "mh2"
+            ]
+          }
+        ],
+        "dimensions": {
+          "diameter": {
+            "value": 300,
+            "unit": "mm",
+            "said": "a 300 mm sewer"
+          }
+        },
+        "properties": {
+          "pipe_use": "sewer"
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "title": "Twelve bays heard, fourteen committed",
+      "user_text": "twelve parking bays along the road",
+      "known": {
+        "road1": "road"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "civil",
+        "act": "add",
+        "object": {
+          "kind": "parking_bay",
+          "name": "bays"
+        },
+        "relations": [
+          {
+            "relation": "distributed_over",
+            "to": [
+              "road1"
+            ],
+            "count": {
+              "value": 14,
+              "said": "twelve parking bays"
+            }
+          }
+        ]
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "not-said"
+        ],
+        "messages": [
+          "relations[0].count.value: 14 does not appear in what the user said (\"twelve parking bays\"); a number must be copied as the user said it, in the user's unit -- never converted, never guessed"
+        ]
+      }
+    },
+    {
+      "title": "'between' with one target",
+      "user_text": "a water main to MH1",
+      "known": {
+        "mh1": "manhole"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "civil",
+        "act": "add",
+        "object": {
+          "kind": "pipe",
+          "name": "w1"
+        },
+        "relations": [
+          {
+            "relation": "between",
+            "to": [
+              "mh1"
+            ]
+          }
+        ],
+        "dimensions": {
+          "diameter": {
+            "value": 110,
+            "unit": "mm",
+            "said": "a water main"
+          }
+        },
+        "properties": {
+          "pipe_use": "water"
+        }
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "arity",
+          "not-said"
+        ],
+        "messages": [
+          "dimensions.diameter.value: 110 does not appear in what the user said (\"a water main\"); a number must be copied as the user said it, in the user's unit -- never converted, never guessed",
+          "relations[0].to: \"between\" takes 2 targets, not 1"
+        ]
+      }
+    },
+    {
+      "title": "A pipe without what it carries",
+      "user_text": "a 200 mm pipe between the manholes",
+      "known": {
+        "mh1": "manhole",
+        "mh2": "manhole"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "civil",
+        "act": "add",
+        "object": {
+          "kind": "pipe",
+          "name": "p1"
+        },
+        "relations": [
+          {
+            "relation": "between",
+            "to": [
+              "mh1",
+              "mh2"
+            ]
+          }
+        ],
+        "dimensions": {
+          "diameter": {
+            "value": 200,
+            "unit": "mm",
+            "said": "a 200 mm pipe"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "missing-property"
+        ],
+        "messages": [
+          "properties: a pipe needs a pipe_use. If the user did not say, ask: never guess"
+        ]
+      }
+    },
+    {
+      "title": "A target that does not exist",
+      "user_text": "a 1 m manhole next to MH9",
+      "known": {
+        "mh1": "manhole"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "civil",
+        "act": "add",
+        "object": {
+          "kind": "manhole",
+          "name": "mh3"
+        },
+        "relations": [
+          {
+            "relation": "next_to",
+            "to": [
+              "mh9"
+            ],
+            "side": "right"
+          }
+        ],
+        "dimensions": {
+          "diameter": {
+            "value": 1,
+            "unit": "m",
+            "said": "a 1 m manhole"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "unknown-target"
+        ],
+        "messages": [
+          "relations[0].to[0]: there is no object called \"mh9\"; known objects: mh1, origin"
+        ]
+      }
+    }
+  ]
+}

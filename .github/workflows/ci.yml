@@ -6,6 +6,7 @@
 #   plan        tools/loop.py check      the executable plan is coherent
 #               tools/sync_plan.py check the prose plan and the backlog agree
 #               tools/check_core_imports.py  the engine core is standard-library only
+#               python -m lang.form verify   the generated form schema is current
 #   test        pytest                   the headless suite: no CAD, no Ollama, no network
 #   render      the fixture drawings rendered to PNG and uploaded as artefacts,
 #               so every push leaves pictures behind that can be looked at.
@@ -50,6 +51,8 @@ jobs:
         run: python tools/sync_plan.py check
       - name: The engine core imports nothing outside the standard library
         run: python tools/check_core_imports.py --list
+      - name: The form schema and the catalogue document match the catalogue
+        run: python -m lang.form verify
 
   test:
     name: test (${{ matrix.os }}, py${{ matrix.python }})

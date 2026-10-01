@@ -1,0 +1,173 @@
+{
+  "catalogue": "linework/catalogue",
+  "version": 1,
+  "note": "The closed vocabulary of the commitment form (ADR 0005). Every word the model may use when it commits is an entry here, with its meaning. A word that is not here cannot be committed. Hand-edited; shared/form_schema_v1.json and docs/CATALOGUE.md are generated from it by 'python3 -m lang.form write'.",
+  "domains": {
+    "general": {"meaning": "Plain geometry and annotation that belongs to no trade: rectangles, circles, lines, text."},
+    "mechanical": {"meaning": "Flat parts and their features: plates, holes, slots, fillets, chamfers."},
+    "architecture": {"meaning": "Building plans: rooms, walls and what is hosted in them."},
+    "civil": {"meaning": "Site and infrastructure plans: plots, roads, parking, pipes, manholes."},
+    "schematic": {"meaning": "Circuit and connection diagrams: symbols joined by wires."}
+  },
+  "acts": {
+    "add": {"meaning": "Put a new object in the drawing. The name must be new."},
+    "change": {"meaning": "Change dimensions, properties, relations or text of an object that already exists."},
+    "remove": {"meaning": "Take an existing object out of the drawing. Nothing but its name is given."}
+  },
+  "units": {
+    "mm": {"measure": "length", "meaning": "millimetre"},
+    "cm": {"measure": "length", "meaning": "centimetre"},
+    "m": {"measure": "length", "meaning": "metre"},
+    "deg": {"measure": "angle", "meaning": "degree of arc"}
+  },
+  "measures": {
+    "length": {"meaning": "A distance on the sheet in real-world units; needs a length unit."},
+    "angle": {"meaning": "A rotation; needs an angle unit."},
+    "count": {"meaning": "A whole number of things; takes no unit."}
+  },
+  "quantities": {
+    "width": {"measure": "length", "meaning": "The extent across the object, perpendicular to its length; for hosted objects, along the host."},
+    "height": {"measure": "length", "meaning": "The vertical extent on the sheet; for doors and windows, the real-world height of the opening."},
+    "length": {"measure": "length", "meaning": "The long extent of the object, along its main axis."},
+    "depth": {"measure": "length", "meaning": "How far the object reaches into its host or away from the viewer; for blind holes, the drilled depth."},
+    "thickness": {"measure": "length", "meaning": "The thickness of a wall or a plate."},
+    "diameter": {"measure": "length", "meaning": "The diameter of a round object; for a regular polygon, the circumscribed circle."},
+    "radius": {"measure": "length", "meaning": "The radius of a round object or of a fillet."},
+    "sill_height": {"measure": "length", "meaning": "The height of a window's sill above the floor."},
+    "distance": {"measure": "length", "meaning": "A gap between two things, measured edge to edge unless the relation says otherwise."},
+    "angle": {"measure": "angle", "meaning": "A rotation, counter-clockwise from the horizontal."},
+    "count": {"measure": "count", "min": 1, "meaning": "How many copies."},
+    "sides": {"measure": "count", "min": 3, "meaning": "How many sides a regular polygon has."}
+  },
+  "parameters": {
+    "side": {"type": "word", "meaning": "Which side of the target the object goes on.", "values": {
+      "left": {"meaning": "Towards the left of the sheet from the target."},
+      "right": {"meaning": "Towards the right of the sheet from the target."},
+      "above": {"meaning": "Towards the top of the sheet from the target."},
+      "below": {"meaning": "Towards the bottom of the sheet from the target."},
+      "inside": {"meaning": "Towards the inside of the target's outline (a room's interior side of a wall)."},
+      "outside": {"meaning": "Towards the outside of the target's outline."}
+    }},
+    "axis": {"type": "word", "meaning": "The direction along which two things line up.", "values": {
+      "horizontal": {"meaning": "Same height on the sheet: centres on one horizontal line."},
+      "vertical": {"meaning": "Same position across the sheet: centres on one vertical line."}
+    }},
+    "distance": {"type": "number", "quantity": "distance", "meaning": "How far from the target."},
+    "count": {"type": "number", "quantity": "count", "meaning": "How many copies to distribute."}
+  },
+  "relations": {
+    "on": {"targets": 1, "params": {}, "meaning": "Hosted by the target: a window on a wall, a hole on a plate, a junction on a wire."},
+    "inside": {"targets": 1, "params": {}, "meaning": "Entirely within the target's outline."},
+    "centred_on": {"targets": 1, "params": {}, "meaning": "The object's centre coincides with the target's centre; on a wall, the wall's midpoint along its length."},
+    "along": {"targets": 1, "params": {"side": "optional"}, "meaning": "Runs along the whole length of the target, on the given side if one is named."},
+    "offset_from": {"targets": 1, "params": {"distance": "required", "side": "required"}, "meaning": "At the given distance from the target, on the given side."},
+    "next_to": {"targets": 1, "params": {"side": "required"}, "meaning": "Touching the target, on the given side."},
+    "between": {"targets": 2, "params": {}, "meaning": "Spans from the first target to the second: a wire between two terminals, a wall between two rooms."},
+    "aligned_with": {"targets": 1, "params": {"axis": "required"}, "meaning": "Lined up with the target along the given axis."},
+    "distributed_over": {"targets": 1, "params": {"count": "required"}, "meaning": "The given number of copies, equally spaced over the target."},
+    "at": {"targets": 1, "params": {}, "meaning": "The object's reference point coincides with the target's: 'at origin' anchors the first object of a drawing."}
+  },
+  "reserved_names": {
+    "origin": {"meaning": "The origin of the drawing. Always exists; cannot be added, changed or removed."}
+  },
+  "properties": {
+    "thread": {"meaning": "ISO metric coarse thread of a threaded hole.", "values": {
+      "M3": {"meaning": "nominal 3 mm"}, "M4": {"meaning": "nominal 4 mm"}, "M5": {"meaning": "nominal 5 mm"},
+      "M6": {"meaning": "nominal 6 mm"}, "M8": {"meaning": "nominal 8 mm"}, "M10": {"meaning": "nominal 10 mm"},
+      "M12": {"meaning": "nominal 12 mm"}, "M16": {"meaning": "nominal 16 mm"}, "M20": {"meaning": "nominal 20 mm"},
+      "M24": {"meaning": "nominal 24 mm"}
+    }},
+    "hole_type": {"meaning": "Whether a hole goes all the way through its host.", "values": {
+      "through": {"meaning": "All the way through the host."},
+      "blind": {"meaning": "Stops at the given depth."}
+    }},
+    "corner": {"meaning": "Which corner of the host a corner feature goes on.", "values": {
+      "all": {"meaning": "Every corner of the host."},
+      "top_left": {"meaning": "The top-left corner on the sheet."},
+      "top_right": {"meaning": "The top-right corner on the sheet."},
+      "bottom_left": {"meaning": "The bottom-left corner on the sheet."},
+      "bottom_right": {"meaning": "The bottom-right corner on the sheet."}
+    }},
+    "hinge_side": {"meaning": "Which jamb of a door carries the hinges, seen from the side it opens towards.", "values": {
+      "left": {"meaning": "Hinges on the left jamb."},
+      "right": {"meaning": "Hinges on the right jamb."}
+    }},
+    "swing": {"meaning": "Which way a door opens relative to the room it belongs to.", "values": {
+      "inward": {"meaning": "Opens into the room."},
+      "outward": {"meaning": "Opens out of the room."}
+    }},
+    "pipe_use": {"meaning": "What a pipe carries; decides its layer and line style.", "values": {
+      "water": {"meaning": "Drinking water supply."},
+      "sewer": {"meaning": "Foul sewage."},
+      "storm": {"meaning": "Rainwater drainage."},
+      "gas": {"meaning": "Gas supply."}
+    }},
+    "orientation": {"meaning": "How a schematic symbol lies on the sheet.", "values": {
+      "horizontal": {"meaning": "Its terminals left and right."},
+      "vertical": {"meaning": "Its terminals top and bottom."}
+    }}
+  },
+  "objects": {
+    "rectangle": {"domain": "general", "meaning": "A closed rectangle.",
+      "dimensions": {"width": "required", "height": "required", "angle": "optional"}},
+    "circle": {"domain": "general", "meaning": "A closed circle.",
+      "dimensions": {"diameter": "optional", "radius": "optional"}, "exactly_one_of": [["diameter", "radius"]]},
+    "line": {"domain": "general", "meaning": "A straight line; where it starts and ends comes from its relations.",
+      "dimensions": {"length": "optional", "angle": "optional"}},
+    "regular_polygon": {"domain": "general", "meaning": "A regular polygon inscribed in a circle of the given diameter.",
+      "dimensions": {"sides": "required", "diameter": "required", "angle": "optional"}},
+    "text": {"domain": "general", "meaning": "A line of text; its height comes from the drawing standard unless given.",
+      "dimensions": {"height": "memory", "angle": "optional"}, "takes_text": true},
+    "plate": {"domain": "mechanical", "meaning": "The outline of a flat rectangular part.",
+      "dimensions": {"width": "required", "height": "required", "thickness": "optional"}},
+    "hole": {"domain": "mechanical", "meaning": "A plain round hole in a plate.",
+      "dimensions": {"diameter": "optional", "radius": "optional", "depth": "optional"}, "exactly_one_of": [["diameter", "radius"]],
+      "properties": {"hole_type": "optional"}, "needs_relation": ["on"], "host": ["plate"]},
+    "threaded_hole": {"domain": "mechanical", "meaning": "A tapped hole; the drill and thread diameters come from the thread size.",
+      "dimensions": {"depth": "optional"}, "properties": {"thread": "required", "hole_type": "optional"},
+      "needs_relation": ["on"], "host": ["plate"]},
+    "slot": {"domain": "mechanical", "meaning": "A straight slot with round ends; length is overall, width is the end diameter.",
+      "dimensions": {"length": "required", "width": "required", "angle": "optional"}, "needs_relation": ["on"], "host": ["plate"]},
+    "fillet": {"domain": "mechanical", "meaning": "A rounded corner of a plate.",
+      "dimensions": {"radius": "required"}, "properties": {"corner": "required"}, "needs_relation": ["on"], "host": ["plate"]},
+    "chamfer": {"domain": "mechanical", "meaning": "A 45-degree bevel on a corner of a plate; length is the leg.",
+      "dimensions": {"length": "required"}, "properties": {"corner": "required"}, "needs_relation": ["on"], "host": ["plate"]},
+    "room": {"domain": "architecture", "meaning": "A rectangular room, given by its internal size; its walls follow from the standard.",
+      "dimensions": {"width": "required", "length": "required"}, "takes_text": true},
+    "wall": {"domain": "architecture", "meaning": "A straight wall; its thickness comes from the standard unless given.",
+      "dimensions": {"length": "optional", "thickness": "memory", "height": "optional"}},
+    "door": {"domain": "architecture", "meaning": "A hinged door in a wall, with its swing drawn.",
+      "dimensions": {"width": "required", "height": "memory"}, "properties": {"hinge_side": "optional", "swing": "optional"},
+      "needs_relation": ["on"], "host": ["wall"]},
+    "window": {"domain": "architecture", "meaning": "A window in a wall.",
+      "dimensions": {"width": "required", "height": "memory", "sill_height": "memory"}, "needs_relation": ["on"], "host": ["wall"]},
+    "opening": {"domain": "architecture", "meaning": "A plain opening in a wall, with no door or window.",
+      "dimensions": {"width": "required", "height": "optional"}, "needs_relation": ["on"], "host": ["wall"]},
+    "column": {"domain": "architecture", "meaning": "A column: square if given a width, round if given a diameter.",
+      "dimensions": {"width": "optional", "diameter": "optional"}, "exactly_one_of": [["width", "diameter"]]},
+    "plot": {"domain": "civil", "meaning": "A rectangular plot boundary.",
+      "dimensions": {"width": "required", "length": "required"}, "takes_text": true},
+    "road": {"domain": "civil", "meaning": "A straight road carriageway, drawn as its two edges and centreline.",
+      "dimensions": {"width": "required", "length": "optional"}},
+    "parking_bay": {"domain": "civil", "meaning": "One parking bay; its size comes from the standard unless given.",
+      "dimensions": {"width": "memory", "length": "memory", "angle": "optional"}},
+    "manhole": {"domain": "civil", "meaning": "A round manhole.",
+      "dimensions": {"diameter": "required"}, "takes_text": true},
+    "pipe": {"domain": "civil", "meaning": "A buried pipe, drawn as a single line in the style of what it carries.",
+      "dimensions": {"diameter": "required"}, "properties": {"pipe_use": "required"}},
+    "resistor": {"domain": "schematic", "meaning": "A resistor symbol; its text is the designator, such as R1.",
+      "properties": {"orientation": "optional"}, "takes_text": true},
+    "capacitor": {"domain": "schematic", "meaning": "A capacitor symbol; its text is the designator.",
+      "properties": {"orientation": "optional"}, "takes_text": true},
+    "switch": {"domain": "schematic", "meaning": "A single-pole switch symbol; its text is the designator.",
+      "properties": {"orientation": "optional"}, "takes_text": true},
+    "lamp": {"domain": "schematic", "meaning": "A lamp symbol; its text is the designator.",
+      "properties": {"orientation": "optional"}, "takes_text": true},
+    "terminal": {"domain": "schematic", "meaning": "A connection terminal; its text is its label.",
+      "takes_text": true},
+    "wire": {"domain": "schematic", "meaning": "A wire joining two symbols or terminals; routed by the solver.",
+      "needs_relation": ["between"]},
+    "junction": {"domain": "schematic", "meaning": "A connection dot on a wire.",
+      "needs_relation": ["on"], "host": ["wire"]}
+  }
+}

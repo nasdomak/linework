@@ -11,3 +11,12 @@ CORE package: tools/check_core_imports.py and tests/test_dependency_rules.py enf
 
 The same contract is stated in `shared/__init__.py`; the repository table is in
 the root `README.md`, "Repository layout".
+
+## What is here
+
+- `catalogue_v1.json` -- the closed vocabulary of the commitment form, one entry
+  per word with its meaning (ADR 0005). Edited by hand.
+- `catalogue.py` -- loads it and checks it is internally consistent.
+- `form_schema_v1.json` -- the JSON Schema of the form. **Generated** by
+  `python3 -m lang.form write`; never edit it by hand. The readable list of words
+  is `docs/CATALOGUE.md`, generated the same way.

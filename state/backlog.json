@@ -229,7 +229,7 @@
       ],
       "verification": "tests/test_form.py feeds valid and invalid forms and asserts acceptance, refusal, and the wording of each refusal",
       "size": "L",
-      "status": "todo",
+      "status": "doing",
       "blocked_reason": "",
       "decision": ""
     },

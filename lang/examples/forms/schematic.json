@@ -1,0 +1,266 @@
+{
+  "domain": "schematic",
+  "note": "A resistor and a lamp joined by a wire.",
+  "examples": [
+    {
+      "title": "A resistor at the origin",
+      "user_text": "start with a resistor R1, horizontal",
+      "known": {},
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "schematic",
+        "act": "add",
+        "object": {
+          "kind": "resistor",
+          "name": "r1"
+        },
+        "relations": [
+          {
+            "relation": "at",
+            "to": [
+              "origin"
+            ]
+          }
+        ],
+        "properties": {
+          "orientation": "horizontal"
+        },
+        "text": "R1"
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "title": "A lamp to the right of the resistor",
+      "user_text": "lamp L1 to the right of R1, 20 mm away",
+      "known": {
+        "r1": "resistor"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "schematic",
+        "act": "add",
+        "object": {
+          "kind": "lamp",
+          "name": "l1"
+        },
+        "relations": [
+          {
+            "relation": "offset_from",
+            "to": [
+              "r1"
+            ],
+            "side": "right",
+            "distance": {
+              "value": 20,
+              "unit": "mm",
+              "said": "20 mm away"
+            }
+          }
+        ],
+        "text": "L1"
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "title": "A wire joining them",
+      "user_text": "wire R1 to L1",
+      "known": {
+        "r1": "resistor",
+        "l1": "lamp"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "schematic",
+        "act": "add",
+        "object": {
+          "kind": "wire",
+          "name": "n1"
+        },
+        "relations": [
+          {
+            "relation": "between",
+            "to": [
+              "r1",
+              "l1"
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "title": "A junction on the wire",
+      "user_text": "put a junction on that wire",
+      "known": {
+        "r1": "resistor",
+        "l1": "lamp",
+        "n1": "wire"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "schematic",
+        "act": "add",
+        "object": {
+          "kind": "junction",
+          "name": "j1"
+        },
+        "relations": [
+          {
+            "relation": "on",
+            "to": [
+              "n1"
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "title": "A wire with no ends",
+      "user_text": "add a wire",
+      "known": {},
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "schematic",
+        "act": "add",
+        "object": {
+          "kind": "wire",
+          "name": "n2"
+        }
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "needs-relation"
+        ],
+        "messages": [
+          "relations: a wire needs the relation \"between\""
+        ]
+      }
+    },
+    {
+      "title": "A wire from a symbol back to the same symbol",
+      "user_text": "wire R1 to R1",
+      "known": {
+        "r1": "resistor"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "schematic",
+        "act": "add",
+        "object": {
+          "kind": "wire",
+          "name": "n3"
+        },
+        "relations": [
+          {
+            "relation": "between",
+            "to": [
+              "r1",
+              "r1"
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "same-target"
+        ],
+        "messages": [
+          "relations[0].to[1]: \"r1\" is named twice; \"between\" needs 2 different targets"
+        ]
+      }
+    },
+    {
+      "title": "A resistor given a resistance the catalogue cannot hold",
+      "user_text": "R2, 10 kilo-ohm",
+      "known": {},
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "schematic",
+        "act": "add",
+        "object": {
+          "kind": "resistor",
+          "name": "r2"
+        },
+        "relations": [
+          {
+            "relation": "at",
+            "to": [
+              "origin"
+            ]
+          }
+        ],
+        "dimensions": {
+          "resistance": {
+            "value": 10,
+            "unit": "kohm",
+            "said": "10 kilo-ohm"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "unknown-word"
+        ],
+        "messages": [
+          "dimensions.resistance: \"resistance\" is not a known quantity, and a resistor takes no dimensions at all"
+        ]
+      }
+    },
+    {
+      "title": "A wire given text",
+      "user_text": "wire n4 called VCC",
+      "known": {
+        "r1": "resistor",
+        "l1": "lamp"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "schematic",
+        "act": "add",
+        "object": {
+          "kind": "wire",
+          "name": "n4"
+        },
+        "relations": [
+          {
+            "relation": "between",
+            "to": [
+              "r1",
+              "l1"
+            ]
+          }
+        ],
+        "text": "VCC"
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "no-text"
+        ],
+        "messages": [
+          "text: a wire takes no text"
+        ]
+      }
+    }
+  ]
+}

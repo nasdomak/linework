@@ -1,0 +1,431 @@
+{
+  "domain": "mechanical",
+  "note": "A flat bracket: plate, holes, fillets.",
+  "examples": [
+    {
+      "title": "A plate the user sized",
+      "user_text": "draw a plate 200 x 120 mm, 10 mm thick",
+      "known": {},
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "mechanical",
+        "act": "add",
+        "object": {
+          "kind": "plate",
+          "name": "plate1"
+        },
+        "relations": [
+          {
+            "relation": "at",
+            "to": [
+              "origin"
+            ]
+          }
+        ],
+        "dimensions": {
+          "width": {
+            "value": 200,
+            "unit": "mm",
+            "said": "200 x 120 mm"
+          },
+          "height": {
+            "value": 120,
+            "unit": "mm",
+            "said": "200 x 120 mm"
+          },
+          "thickness": {
+            "value": 10,
+            "unit": "mm",
+            "said": "10 mm thick"
+          }
+        },
+        "reason": "The user gave all three sizes; the first object is anchored at the origin."
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "title": "A tapped hole centred on the plate",
+      "user_text": "put an M8 tapped hole in the middle of the plate",
+      "known": {
+        "plate1": "plate"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "mechanical",
+        "act": "add",
+        "object": {
+          "kind": "threaded_hole",
+          "name": "hole_centre"
+        },
+        "relations": [
+          {
+            "relation": "on",
+            "to": [
+              "plate1"
+            ]
+          },
+          {
+            "relation": "centred_on",
+            "to": [
+              "plate1"
+            ]
+          }
+        ],
+        "properties": {
+          "thread": "M8",
+          "hole_type": "through"
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "title": "Four holes spread along the top edge",
+      "user_text": "four 6.5 mm holes along the top of the plate, 15 mm in from the edge",
+      "known": {
+        "plate1": "plate"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "mechanical",
+        "act": "add",
+        "object": {
+          "kind": "hole",
+          "name": "holes_top"
+        },
+        "relations": [
+          {
+            "relation": "on",
+            "to": [
+              "plate1"
+            ]
+          },
+          {
+            "relation": "distributed_over",
+            "to": [
+              "plate1"
+            ],
+            "count": {
+              "value": 4,
+              "said": "four 6.5 mm holes"
+            }
+          },
+          {
+            "relation": "offset_from",
+            "to": [
+              "plate1"
+            ],
+            "distance": {
+              "value": 15,
+              "unit": "mm",
+              "said": "15 mm in from the edge"
+            },
+            "side": "inside"
+          }
+        ],
+        "dimensions": {
+          "diameter": {
+            "value": 6.5,
+            "unit": "mm",
+            "said": "6.5 mm holes"
+          }
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "title": "Rounding every corner",
+      "user_text": "round all the corners of the plate, radius 5",
+      "known": {
+        "plate1": "plate"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "mechanical",
+        "act": "add",
+        "object": {
+          "kind": "fillet",
+          "name": "corners"
+        },
+        "relations": [
+          {
+            "relation": "on",
+            "to": [
+              "plate1"
+            ]
+          }
+        ],
+        "dimensions": {
+          "radius": {
+            "value": 5,
+            "unit": "mm",
+            "said": "radius 5"
+          }
+        },
+        "properties": {
+          "corner": "all"
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "title": "A hole given a coordinate instead of a relation",
+      "user_text": "a 10 mm hole at 50, 40",
+      "known": {
+        "plate1": "plate"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "mechanical",
+        "act": "add",
+        "object": {
+          "kind": "hole",
+          "name": "h1"
+        },
+        "relations": [
+          {
+            "relation": "on",
+            "to": [
+              "plate1"
+            ],
+            "x": 50,
+            "y": 40
+          }
+        ],
+        "dimensions": {
+          "diameter": {
+            "value": 10,
+            "unit": "mm",
+            "said": "10 mm hole"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "coordinate",
+          "coordinate"
+        ],
+        "messages": [
+          "relations[0].x: field \"x\" would carry a coordinate; the form never takes coordinates -- state a relation instead (ADR 0001)",
+          "relations[0].y: field \"y\" would carry a coordinate; the form never takes coordinates -- state a relation instead (ADR 0001)"
+        ]
+      }
+    },
+    {
+      "title": "A diameter the user never said",
+      "user_text": "a hole in the plate",
+      "known": {
+        "plate1": "plate"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "mechanical",
+        "act": "add",
+        "object": {
+          "kind": "hole",
+          "name": "h2"
+        },
+        "relations": [
+          {
+            "relation": "on",
+            "to": [
+              "plate1"
+            ]
+          }
+        ],
+        "dimensions": {
+          "diameter": {
+            "value": 10,
+            "unit": "mm",
+            "said": "a hole in the plate"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "not-said"
+        ],
+        "messages": [
+          "dimensions.diameter.value: 10 does not appear in what the user said (\"a hole in the plate\"); a number must be copied as the user said it, in the user's unit -- never converted, never guessed"
+        ]
+      }
+    },
+    {
+      "title": "A size invented to fill a required field",
+      "user_text": "a plate 200 wide",
+      "known": {},
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "mechanical",
+        "act": "add",
+        "object": {
+          "kind": "plate",
+          "name": "p2"
+        },
+        "dimensions": {
+          "width": {
+            "value": 200,
+            "unit": "mm",
+            "said": "200 wide"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "missing-dimension"
+        ],
+        "messages": [
+          "dimensions: a plate needs a height. If the user did not give one, ask: never guess a number"
+        ]
+      }
+    },
+    {
+      "title": "A thread that is not in the list",
+      "user_text": "an M7 tapped hole",
+      "known": {
+        "plate1": "plate"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "mechanical",
+        "act": "add",
+        "object": {
+          "kind": "threaded_hole",
+          "name": "h3"
+        },
+        "relations": [
+          {
+            "relation": "on",
+            "to": [
+              "plate1"
+            ]
+          }
+        ],
+        "properties": {
+          "thread": "M7"
+        }
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "unknown-word"
+        ],
+        "messages": [
+          "properties.thread: \"M7\" is not a known value of thread. Known values of thread: M3, M4, M5, M6, M8, M10, M12, M16, M20, M24"
+        ]
+      }
+    },
+    {
+      "title": "Both diameter and radius",
+      "user_text": "a hole of diameter 10, radius 5",
+      "known": {
+        "plate1": "plate"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "mechanical",
+        "act": "add",
+        "object": {
+          "kind": "hole",
+          "name": "h4"
+        },
+        "relations": [
+          {
+            "relation": "on",
+            "to": [
+              "plate1"
+            ]
+          }
+        ],
+        "dimensions": {
+          "diameter": {
+            "value": 10,
+            "unit": "mm",
+            "said": "diameter 10"
+          },
+          "radius": {
+            "value": 5,
+            "unit": "mm",
+            "said": "radius 5"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "one-of"
+        ],
+        "messages": [
+          "dimensions: give either diameter or radius for a hole, not both"
+        ]
+      }
+    },
+    {
+      "title": "Millimetres silently turned into centimetres",
+      "user_text": "a 120 mm slot, 8 mm wide",
+      "known": {
+        "plate1": "plate"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "mechanical",
+        "act": "add",
+        "object": {
+          "kind": "slot",
+          "name": "s1"
+        },
+        "relations": [
+          {
+            "relation": "on",
+            "to": [
+              "plate1"
+            ]
+          }
+        ],
+        "dimensions": {
+          "length": {
+            "value": 12,
+            "unit": "cm",
+            "said": "a 120 mm slot"
+          },
+          "width": {
+            "value": 8,
+            "unit": "mm",
+            "said": "8 mm wide"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "not-said",
+          "not-said"
+        ],
+        "messages": [
+          "dimensions.length.value: 12 does not appear in what the user said (\"a 120 mm slot\"); a number must be copied as the user said it, in the user's unit -- never converted, never guessed",
+          "dimensions.length.unit: the user said mm (\"a 120 mm slot\"), not cm; the unit is copied as the user said it, never converted"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,422 @@
+{
+  "domain": "architecture",
+  "note": "A small flat: rooms, walls, a door and windows.",
+  "examples": [
+    {
+      "title": "A window centred on a wall",
+      "user_text": "a window on the north wall, centred, width 120",
+      "known": {
+        "wall_north": "wall"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "architecture",
+        "act": "add",
+        "object": {
+          "kind": "window",
+          "name": "w1"
+        },
+        "relations": [
+          {
+            "relation": "on",
+            "to": [
+              "wall_north"
+            ]
+          },
+          {
+            "relation": "centred_on",
+            "to": [
+              "wall_north"
+            ]
+          }
+        ],
+        "dimensions": {
+          "width": {
+            "value": 120,
+            "unit": "cm",
+            "said": "width 120"
+          }
+        },
+        "reason": "Sill and height come from the standard in memory."
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "title": "A room anchored at the origin",
+      "user_text": "a 5 x 4 m living room",
+      "known": {},
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "architecture",
+        "act": "add",
+        "object": {
+          "kind": "room",
+          "name": "living"
+        },
+        "relations": [
+          {
+            "relation": "at",
+            "to": [
+              "origin"
+            ]
+          }
+        ],
+        "dimensions": {
+          "width": {
+            "value": 5,
+            "unit": "m",
+            "said": "5 x 4 m"
+          },
+          "length": {
+            "value": 4,
+            "unit": "m",
+            "said": "5 x 4 m"
+          }
+        },
+        "text": "Living room"
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "title": "A second room next to the first",
+      "user_text": "a 3 by 4 m kitchen to the right of the living room",
+      "known": {
+        "living": "room"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "architecture",
+        "act": "add",
+        "object": {
+          "kind": "room",
+          "name": "kitchen"
+        },
+        "relations": [
+          {
+            "relation": "next_to",
+            "to": [
+              "living"
+            ],
+            "side": "right"
+          }
+        ],
+        "dimensions": {
+          "width": {
+            "value": 3,
+            "unit": "m",
+            "said": "3 by 4 m"
+          },
+          "length": {
+            "value": 4,
+            "unit": "m",
+            "said": "3 by 4 m"
+          }
+        },
+        "text": "Kitchen"
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "title": "A door that opens inward",
+      "user_text": "a 90 door in the east wall, hinged on the left, opening into the room",
+      "known": {
+        "wall_east": "wall"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "architecture",
+        "act": "add",
+        "object": {
+          "kind": "door",
+          "name": "d1"
+        },
+        "relations": [
+          {
+            "relation": "on",
+            "to": [
+              "wall_east"
+            ]
+          }
+        ],
+        "dimensions": {
+          "width": {
+            "value": 90,
+            "unit": "cm",
+            "said": "a 90 door"
+          }
+        },
+        "properties": {
+          "hinge_side": "left",
+          "swing": "inward"
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "title": "Widening an existing window",
+      "user_text": "make that window 150 wide",
+      "known": {
+        "wall_north": "wall",
+        "w1": "window"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "architecture",
+        "act": "change",
+        "object": {
+          "kind": "window",
+          "name": "w1"
+        },
+        "dimensions": {
+          "width": {
+            "value": 150,
+            "unit": "cm",
+            "said": "150 wide"
+          }
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "title": "Removing a door",
+      "user_text": "take out the door d1",
+      "known": {
+        "wall_east": "wall",
+        "d1": "door"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "architecture",
+        "act": "remove",
+        "object": {
+          "kind": "door",
+          "name": "d1"
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "title": "A window placed on a room instead of a wall",
+      "user_text": "a 120 window in the kitchen",
+      "known": {
+        "kitchen": "room"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "architecture",
+        "act": "add",
+        "object": {
+          "kind": "window",
+          "name": "w2"
+        },
+        "relations": [
+          {
+            "relation": "on",
+            "to": [
+              "kitchen"
+            ]
+          }
+        ],
+        "dimensions": {
+          "width": {
+            "value": 120,
+            "unit": "cm",
+            "said": "a 120 window"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "wrong-host"
+        ],
+        "messages": [
+          "relations[0].to[0]: a window goes on a wall, not on a room"
+        ]
+      }
+    },
+    {
+      "title": "A window floating nowhere",
+      "user_text": "a 120 window",
+      "known": {},
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "architecture",
+        "act": "add",
+        "object": {
+          "kind": "window",
+          "name": "w3"
+        },
+        "dimensions": {
+          "width": {
+            "value": 120,
+            "unit": "cm",
+            "said": "a 120 window"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "needs-relation"
+        ],
+        "messages": [
+          "relations: a window must be placed on a wall: add the relation \"on\""
+        ]
+      }
+    },
+    {
+      "title": "'next to' without a side",
+      "user_text": "a bathroom next to the kitchen, 2 x 2 m",
+      "known": {
+        "kitchen": "room"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "architecture",
+        "act": "add",
+        "object": {
+          "kind": "room",
+          "name": "bath"
+        },
+        "relations": [
+          {
+            "relation": "next_to",
+            "to": [
+              "kitchen"
+            ]
+          }
+        ],
+        "dimensions": {
+          "width": {
+            "value": 2,
+            "unit": "m",
+            "said": "2 x 2 m"
+          },
+          "length": {
+            "value": 2,
+            "unit": "m",
+            "said": "2 x 2 m"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "missing-parameter"
+        ],
+        "messages": [
+          "relations[0]: \"next_to\" needs a side"
+        ]
+      }
+    },
+    {
+      "title": "Adding a name that already exists",
+      "user_text": "another 80 door",
+      "known": {
+        "wall_east": "wall",
+        "d1": "door"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "architecture",
+        "act": "add",
+        "object": {
+          "kind": "door",
+          "name": "d1"
+        },
+        "relations": [
+          {
+            "relation": "on",
+            "to": [
+              "wall_east"
+            ]
+          }
+        ],
+        "dimensions": {
+          "width": {
+            "value": 80,
+            "unit": "cm",
+            "said": "another 80 door"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "name-taken"
+        ],
+        "messages": [
+          "object.name: \"d1\" already exists (a door); adding needs a new name, or use the act \"change\""
+        ]
+      }
+    },
+    {
+      "title": "A mechanical word in an architecture form",
+      "user_text": "a hole in the wall",
+      "known": {
+        "wall_east": "wall"
+      },
+      "form": {
+        "form": "linework/commitment",
+        "version": 1,
+        "domain": "architecture",
+        "act": "add",
+        "object": {
+          "kind": "hole",
+          "name": "h1"
+        },
+        "relations": [
+          {
+            "relation": "on",
+            "to": [
+              "wall_east"
+            ]
+          }
+        ],
+        "dimensions": {
+          "diameter": {
+            "value": 10,
+            "unit": "cm",
+            "said": "a hole in the wall"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "codes": [
+          "wrong-domain",
+          "wrong-host",
+          "not-said"
+        ],
+        "messages": [
+          "object.kind: object kind \"hole\" belongs to mechanical, not architecture",
+          "dimensions.diameter.value: 10 does not appear in what the user said (\"a hole in the wall\"); a number must be copied as the user said it, in the user's unit -- never converted, never guessed",
+          "relations[0].to[0]: a hole goes on a plate, not on a wall"
+        ]
+      }
+    }
+  ]
+}
