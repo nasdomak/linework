@@ -180,12 +180,101 @@ class Statement(object):
         return f
 
 
+class Choice(object):
+    """An open or decided choice between alternatives (P1-T03, ADR 0006).
+
+    choice entrance: open  # where does the entrance go?
+    choice entrance: decided b  # the user wants the garden side
+    """
+
+    def __init__(self, name, decided=None, reason=None, line=0):
+        self.name, self.decided, self.reason, self.line = name, decided, reason, line
+        self.options = []
+
+    def labels(self):
+        out = []
+        for o in self.options:
+            if o.label not in out:
+                out.append(o.label)
+        return out
+
+    def option_statements(self, label):
+        return [o.statement for o in self.options if o.label == label]
+
+    def __str__(self):
+        out = "choice %s: %s" % (self.name, "open" if self.decided is None
+                                 else "decided " + self.decided)
+        if self.reason:
+            out += "  # " + self.reason
+        return out
+
+
+class Option(object):
+    """One line of one alternative: option <choice> <label>: <statement>"""
+
+    def __init__(self, choice, label, statement, line=0):
+        self.choice, self.label, self.statement, self.line = choice, label, statement, line
+
+    def __str__(self):
+        return "option %s %s: %s" % (self.choice, self.label, self.statement)
+
+
+class OpenChoiceError(ScriptError):
+    """Raised when a script with an open choice is asked for geometry."""
+
+
 class Script(object):
     def __init__(self, items=None):
         self.items = list(items or [])
 
     def statements(self):
+        """The statements outside any choice."""
         return [i for i in self.items if isinstance(i, Statement)]
+
+    def choices(self):
+        return [i for i in self.items if isinstance(i, Choice)]
+
+    def open_choices(self):
+        return [c for c in self.choices() if c.decided is None]
+
+    def drawable(self):
+        """The statements to draw, in order, with every decided choice replaced by
+        its chosen option. An open choice cannot be drawn: this raises
+        OpenChoiceError naming every open choice and its options."""
+        open_ = self.open_choices()
+        if open_:
+            what = ["%s (line %d, options %s)" % ('"%s"' % c.name, c.line,
+                                                  ", ".join(c.labels())) for c in open_]
+            if len(open_) == 1:
+                msg = ('cannot draw: choice "%s" is still open -- options %s; decide it '
+                       "first" % (open_[0].name, ", ".join(open_[0].labels())))
+            else:
+                msg = ("cannot draw: %d choices are still open: %s; decide them first"
+                       % (len(open_), "; ".join(what)))
+            raise OpenChoiceError(open_[0].line, msg)
+        out = []
+        for item in self.items:
+            if isinstance(item, Statement):
+                out.append(item)
+            elif isinstance(item, Choice):
+                out.extend(item.option_statements(item.decided))
+        return out
+
+    def decide(self, choice, label, reason=None):
+        """A new script with `choice` decided as `label`. The alternatives stay in
+        the script: they are the record of what was considered."""
+        new = parse(str(self))
+        found = [c for c in new.choices() if c.name == choice]
+        if not found:
+            raise ValueError('there is no choice called "%s"' % choice)
+        c = found[0]
+        if label not in c.labels():
+            raise ValueError('choice "%s" has no option "%s"; its options are %s'
+                             % (choice, label, ", ".join(c.labels())))
+        c.decided = label
+        if reason is not None:
+            c.reason = " ".join(reason.split()) or None
+        return parse(str(new))
 
     def forms(self):
         return [s.form() for s in self.statements()]
@@ -434,6 +523,68 @@ def _clause(L, col, text, cat):
            "property or text: %s" % (w0, hint, ", ".join(known)), c0)
 
 
+def _statement(L, code, start, domain, reason, cat):
+    """Read "<act> <kind> <name>: <clauses>" from code[start:]."""
+    if domain is None:
+        L.fail('no domain yet: write "domain <name>" before the first statement')
+    colon = code.find(":", start)
+    head_end = colon if colon >= 0 else len(code)
+    head = _tokens(start, code[start:head_end])
+    if len(head) > 3:
+        L.fail('a colon must follow the name "%s"; then come the clauses'
+               % head[2][1], head[3][0])
+    if len(head) != 3:
+        L.fail("a statement starts with: <act> <kind> <name>, then a colon and its "
+               "clauses", start)
+    act, kind_tok, name_tok = head
+    if act[1] not in cat["acts"]:
+        L.fail('a statement starts with an act (%s), not "%s"'
+               % (", ".join(sorted(cat["acts"])), act[1]), act[0])
+    kind = kind_tok[1]
+    if kind not in cat["objects"]:
+        L.fail('"%s" is not an object kind' % kind, kind_tok[0])
+    name = _name(L, name_tok, "the object's name")
+    clauses = []
+    if colon >= 0:
+        for col, piece in L.split_clauses(colon + 1, len(code)):
+            clauses.append(_clause(L, col, piece, cat))
+    return Statement(act[1], kind, name, clauses, reason or None, domain, L.n)
+
+
+def _choice(L, code, reason):
+    """choice <name>: open | choice <name>: decided <label>"""
+    colon = code.find(":")
+    head = _tokens(0, code[:colon if colon >= 0 else len(code)])
+    if len(head) != 2 or colon < 0:
+        L.fail("a choice is written as: choice <name>: open -- or -- choice <name>: "
+               "decided <option>", head[min(len(head), 3) - 1][0] if len(head) > 2 else 0)
+    name = _name(L, head[1], "the choice's name")
+    rest = _tokens(colon + 1, code[colon + 1:])
+    if [t[1] for t in rest] == ["open"]:
+        return Choice(name, None, reason or None, L.n)
+    if len(rest) == 2 and rest[0][1] == "decided":
+        return Choice(name, _name(L, rest[1], "the option decided"), reason or None, L.n)
+    L.fail('after "choice %s:" comes "open" or "decided <option>"' % name,
+           rest[0][0] if rest else colon)
+
+
+def _option(L, code, domain, reason, cat):
+    """option <choice> <label>: <statement>"""
+    colon = code.find(":")
+    head = _tokens(0, code[:colon if colon >= 0 else len(code)])
+    if len(head) != 3 or colon < 0:
+        L.fail("an option is written as: option <choice> <label>: <statement>",
+               head[3][0] if len(head) > 3 else 0)
+    choice = _name(L, head[1], "the choice an option belongs to")
+    label = _name(L, head[2], "the option's label")
+    start = colon + 1
+    while start < len(code) and code[start] == " ":
+        start += 1
+    if start >= len(code):
+        L.fail("an option holds a statement after its colon", colon)
+    return Option(choice, label, _statement(L, code, start, domain, reason, cat), L.n)
+
+
 def parse(text, catalogue=None):
     """Read a script. Raises ScriptError naming the line and column."""
     cat = catalogue or _form.default_catalogue()
@@ -465,35 +616,59 @@ def parse(text, catalogue=None):
             domain = words[1]
             items.append(Domain(domain, n))
             continue
+        if words[0] == "choice":
+            items.append(_choice(L, code, reason))
+            continue
+        if words[0] == "option":
+            items.append(_option(L, code, domain, reason, cat))
+            continue
         if words[0] not in cat["acts"]:
-            L.fail('a line starts with domain, #, or an act (%s), not "%s"'
+            L.fail('a line starts with domain, choice, option, #, or an act (%s), not "%s"'
                    % (", ".join(sorted(cat["acts"])), words[0]), L.text.index(words[0]))
-        if domain is None:
-            L.fail('no domain yet: write "domain <name>" before the first statement')
-        colon = code.find(":")
-        head_end = colon if colon >= 0 else len(code)
-        head = _tokens(0, code[:head_end])
-        if len(head) > 3:
-            L.fail('a colon must follow the name "%s"; then come the clauses'
-                   % head[2][1], head[3][0])
-        if len(head) != 3:
-            L.fail("a statement starts with: <act> <kind> <name>, then a colon and its "
-                   "clauses", 0)
-        act, kind_tok, name_tok = head
-        kind = kind_tok[1]
-        if kind not in cat["objects"]:
-            L.fail('"%s" is not an object kind' % kind, kind_tok[0])
-        name = _name(L, name_tok, "the object's name")
-        clauses = []
-        if colon >= 0:
-            for col, piece in L.split_clauses(colon + 1, len(code)):
-                clauses.append(_clause(L, col, piece, cat))
-            if not code[colon + 1:].strip():
-                L.fail("a colon with nothing after it", colon)
-        items.append(Statement(act[1], kind, name, clauses, reason or None, domain, n))
+        items.append(_statement(L, code, len(code) - len(code.lstrip()), domain, reason, cat))
     while items and isinstance(items[-1], Blank):
         items.pop()
+    _link_choices(items)
     return Script(items)
+
+
+def _link_choices(items):
+    """Options follow their choice line; a choice has two options or more; a
+    decided choice names one of them. Errors point at the line at fault."""
+    current, seen = None, {}
+
+    def close(choice):
+        if choice is None:
+            return
+        labels = choice.labels()
+        if len(labels) < 2:
+            raise ScriptError(choice.line, 'choice "%s" needs at least two options to choose '
+                              "between; it has %d" % (choice.name, len(labels)))
+        if choice.decided is not None and choice.decided not in labels:
+            raise ScriptError(choice.line, 'choice "%s" is decided as "%s", but its options '
+                              "are %s" % (choice.name, choice.decided, ", ".join(labels)))
+
+    for item in items:
+        if isinstance(item, Choice):
+            close(current)
+            if item.name in seen:
+                raise ScriptError(item.line, 'there is already a choice called "%s" (line %d)'
+                                  % (item.name, seen[item.name].line))
+            seen[item.name] = current = item
+        elif isinstance(item, Option):
+            if current is None or current.name != item.choice:
+                if item.choice in seen:
+                    raise ScriptError(item.line, 'the options of choice "%s" must follow its '
+                                      "choice line (line %d), with nothing but comments and "
+                                      "blank lines in between"
+                                      % (item.choice, seen[item.choice].line))
+                raise ScriptError(item.line, 'there is no choice called "%s": write "choice '
+                                  '%s: open" first' % (item.choice, item.choice))
+            current.options.append(item)
+        elif isinstance(item, (Statement, Domain)):
+            close(current)
+            current = None
+    close(current)
 
 
 # ------------------------------------------------------------ the engine side
@@ -559,16 +734,40 @@ def _apply(known, f):
 
 def check(script, known=None):
     """Validate every statement, in order, against the drawing built so far.
+
+    Each option of a choice is checked on its own, from the drawing as it stands
+    at the choice. After a decided choice the drawing is the chosen option's;
+    after an open one it holds only what every option agrees on -- a name that
+    exists, with the same kind, whichever option is taken.
     Returns a list of ScriptError (empty when the script is sound)."""
     known = dict(known or {})
     errors = []
-    for s in script.statements():
-        f = s.form()
-        v = _form.validate(f, known=known)
-        for p in v.problems:
-            errors.append(ScriptError(s.line, _locate(s, p), source=str(s)))
-        if v.ok:
-            _apply(known, f)
+
+    def run(statements, k):
+        for s in statements:
+            f = s.form()
+            v = _form.validate(f, known=k)
+            for p in v.problems:
+                errors.append(ScriptError(s.line, _locate(s, p), source=str(s)))
+            if v.ok:
+                _apply(k, f)
+
+    for item in script.items:
+        if isinstance(item, Statement):
+            run([item], known)
+        elif isinstance(item, Choice):
+            after = {}
+            for label in item.labels():
+                k = dict(known)
+                run(item.option_statements(label), k)
+                after[label] = k
+            if item.decided is not None:
+                known = after[item.decided]
+            else:
+                first = after[item.labels()[0]]
+                known = dict((n, kind) for n, kind in first.items()
+                             if all(a.get(n) == kind for a in after.values()))
+    errors.sort(key=lambda e: e.line)
     return errors
 
 

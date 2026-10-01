@@ -159,8 +159,8 @@ def test_parser_errors_name_the_line_and_the_column():
         (H + "domain mechanical\n\tadd plate p1: at origin\n",
          "line 3, column 1: a tab: use spaces"),
         (H + "domain mechanical\ndraw plate p1: at origin\n",
-         'line 3, column 1: a line starts with domain, #, or an act (add, change, remove), '
-         'not "draw"'),
+         'line 3, column 1: a line starts with domain, choice, option, #, or an act (add, change, '
+         'remove), not "draw"'),
         (H + "domain mechanics\n",
          'line 2, column 8: "mechanics" is not a domain; use one of: architecture, civil, '
          "general, mechanical, schematic"),

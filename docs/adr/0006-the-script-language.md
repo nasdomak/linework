@@ -65,7 +65,7 @@ carry the line and quote the clause (`line 4: in "on p1": ...`).
 - The vocabulary of position the plan asks for — centred on, along, offset from,
   between, aligned with, distributed over — is the catalogue's relations, written
   as words; the specification uses every relation at least once.
-- Intent and open alternatives (P1-T03), anchoring rules (P1-T04) and the escape
+- Intent and open alternatives (P1-T03, ADR 0007), anchoring rules (P1-T04) and the escape
   hatch (P1-T05) extend this grammar; each will need a new statement shape, and
   `linework script 1` stays readable by later versions.
 - Decimal commas cannot be used inside a script (the comma separates clauses);

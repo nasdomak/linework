@@ -268,7 +268,7 @@
       ],
       "verification": "tests/test_intent.py asserts a script with an unresolved choice refuses to produce geometry and names the choice",
       "size": "M",
-      "status": "todo",
+      "status": "doing",
       "blocked_reason": "",
       "decision": ""
     },

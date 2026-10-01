@@ -189,6 +189,68 @@ add regular_polygon nut: on part, centred on part, sides 6, diameter 13 mm
 
 `regular_polygon` belongs to `general`, which every trade may use.
 
+## Open choices: "either this or that, to be decided"
+
+A designer often has two good answers and needs the client to pick. The script
+can hold both, side by side, without pretending one was chosen.
+
+```linework
+linework script 1
+domain architecture
+
+add room living: at origin, width 5 m, length 4 m
+add wall wall_south: along living on side below
+add wall wall_east: along living on side right
+
+choice entrance: open  # Where does the front door go? The user has not said yet.
+option entrance street: add door d1: on wall_south, centred on wall_south, width 90 cm  # closest to the street
+option entrance garden: add door d1: on wall_east, centred on wall_east, width 90 cm  # opens on the garden
+option entrance garden: add window w_garden: on wall_south, centred on wall_south, width 120 cm  # light where the door is not
+
+change door d1: width 100 cm  # both options have a door d1, so it can be changed here
+```
+
+- `choice <name>: open` announces the choice; what follows `#` is the question,
+  the design intent behind it.
+- Each `option <choice> <label>: <statement>` line is one line of one
+  alternative. An alternative may take several lines (`garden` has two). A choice
+  has at least two alternatives, and its option lines come right after it.
+- Each alternative is checked on its own, from the drawing as it is at the
+  choice. After an **open** choice, only what every alternative agrees on exists:
+  `d1` is a door in both, so the last line may change it; `w_garden` exists only
+  in one, so nothing after the choice may name it yet.
+
+**An open choice cannot be drawn.** Asked for geometry, the engine refuses and
+says which choice is waiting, and between what:
+
+```
+line 8: cannot draw: choice "entrance" is still open -- options street, garden; decide it first
+```
+
+When the user decides, the engine changes one word -- `open` becomes
+`decided <label>` -- and records why:
+
+```linework
+linework script 1
+domain architecture
+
+add room living: at origin, width 5 m, length 4 m
+add wall wall_south: along living on side below
+add wall wall_east: along living on side right
+
+choice entrance: decided garden  # The user wants to step out onto the garden.
+option entrance street: add door d1: on wall_south, centred on wall_south, width 90 cm  # closest to the street
+option entrance garden: add door d1: on wall_east, centred on wall_east, width 90 cm  # opens on the garden
+option entrance garden: add window w_garden: on wall_south, centred on wall_south, width 120 cm  # light where the door is not
+
+add column c1: inside living, aligned with w_garden on axis vertical, diameter 30 cm
+```
+
+Now the drawing follows `garden`, and `w_garden` exists for the lines after it.
+The `street` alternative stays in the script: it is the record of what was
+considered and turned down, and why -- the raw material of the judgement memory
+(ADR 0002, phase 10).
+
 ## When a script is refused
 
 A script is checked from top to bottom against the drawing it builds as it
@@ -251,6 +313,56 @@ domain mechanical
 add plate p1: at origin, width 200 mm, height 120 mm
 add hole h1: on p1, centered on p1, diameter 8 mm
 # refused: line 4, column 21: a clause cannot start with "centered". Did you mean "centred"? It starts with a relation, a dimension, a property or text: aligned, along, angle, at, between, centred, corner, count, depth, diameter, distance, distributed, height, hinge_side, hole_type, inside, length, next, offset, on, orientation, pipe_use, radius, sides, sill_height, swing, text, thickness, thread, width
+```
+
+A choice decided for an option it does not have:
+
+```linework-refused
+linework script 1
+domain mechanical
+add plate p1: at origin, width 200 mm, height 120 mm
+choice fixing: decided rivets
+option fixing bolts: add hole h1: on p1, centred on p1, diameter 9 mm
+option fixing studs: add threaded_hole h1: on p1, centred on p1, thread M8
+# refused: line 4: choice "fixing" is decided as "rivets", but its options are bolts, studs
+```
+
+A choice with nothing to choose between:
+
+```linework-refused
+linework script 1
+domain mechanical
+add plate p1: at origin, width 200 mm, height 120 mm
+choice fixing: open
+option fixing bolts: add hole h1: on p1, centred on p1, diameter 9 mm
+# refused: line 4: choice "fixing" needs at least two options to choose between; it has 1
+```
+
+Naming what exists in only one alternative of an open choice:
+
+```linework-refused
+linework script 1
+domain mechanical
+add plate p1: at origin, width 200 mm, height 120 mm
+choice fixing: open
+option fixing bolts: add hole h1: on p1, centred on p1, diameter 9 mm
+option fixing studs: add threaded_hole h2: on p1, centred on p1, thread M8
+add slot s1: on p1, aligned with h1 on axis vertical, length 30 mm, width 6 mm
+# refused: line 7: in "aligned with h1 on axis vertical": there is no object called "h1"; known objects: origin, p1
+```
+
+An option away from its choice:
+
+```linework-refused
+linework script 1
+domain mechanical
+add plate p1: at origin, width 200 mm, height 120 mm
+choice fixing: open
+option fixing bolts: add hole h1: on p1, centred on p1, diameter 9 mm
+option fixing studs: add threaded_hole h1: on p1, centred on p1, thread M8
+add slot s1: on p1, length 30 mm, width 6 mm
+option fixing glue: add text t1: inside p1, text "glued"
+# refused: line 8: the options of choice "fixing" must follow its choice line (line 4), with nothing but comments and blank lines in between
 ```
 
 A statement before any domain:
