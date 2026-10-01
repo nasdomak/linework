@@ -237,7 +237,7 @@ class _Check(object):
     def __init__(self, cat, user_text, known):
         self.cat = cat
         self.user_text = user_text
-        self.known = dict(known) if known else None
+        self.known = dict(known) if known is not None else None
         if self.known is not None:
             for r in cat["reserved_names"]:
                 self.known[r] = r

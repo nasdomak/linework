@@ -226,6 +226,15 @@ def test_acceptance_without_drawing_or_user_text_checks_only_the_form():
     assert F.validate(base()).ok
 
 
+def test_an_empty_drawing_is_still_a_drawing():
+    # Found by P1-T02: known={} was read as "no drawing given", so a window on a
+    # wall that did not exist yet passed.
+    v = F.validate(base(), known={})
+    assert not v.ok
+    assert 'relations[0].to[0]: there is no object called "wall_north"; known objects: ' \
+        'origin' in v.messages()
+
+
 def test_change_and_remove_are_accepted_on_existing_objects():
     f = base()
     f["act"] = "change"

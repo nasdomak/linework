@@ -10,6 +10,7 @@ the old one, never by editing it quietly.
 | 0003 | *not written yet* — the number was left free when the plan named the licence ADR 0004 | — |
 | [0004](0004-licence.md) | The licence: GPL-2.0-or-later | accepted, 2026-09-30 |
 | [0005](0005-the-commitment-form.md) | The commitment form | accepted, 2026-10-01 |
+| [0006](0006-the-script-language.md) | The script language | accepted, 2026-10-01 |
 
 Each ADR states its status, date, context, decision, consequences, and how it is
 verified. `tests/test_repo_shape.py` checks the ones the plan depends on.

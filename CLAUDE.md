@@ -96,6 +96,11 @@ Measured 29-30/09/2026.
   Nothing authoritative lives there any more.
 - **A test that measures "some ink" cannot see a missing outline** when holes
   and text are present. Look at the picture.
+- **Breaking code on purpose to prove a test can fail** (mutation check): run
+  with `PYTHONDONTWRITEBYTECODE=1` and delete `__pycache__` first. A mutant of
+  the same size written in the same second as the original is not recompiled:
+  Python reuses the stale `.pyc` and the result belongs to the previous file
+  (seen 01/10/2026: a restored file still "failed").
 
 ## The development loop
 

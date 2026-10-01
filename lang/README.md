@@ -17,5 +17,7 @@ the root `README.md`, "Repository layout".
 - `form.py` -- the commitment form (ADR 0005): `validate(form, user_text, known)`
   refuses anything outside the catalogue with a readable reason. Also
   `python3 -m lang.form write|verify|check`.
+- `script.py` -- the script language (ADR 0006): `parse`, `check`, `from_forms`;
+  `python3 -m lang.script check FILE...`. Specification: `docs/SCRIPT.md`.
 - `examples/forms/` -- worked forms in the four domains, accepted and refused,
   each refusal stated word for word. Checked by `tests/test_form.py`.
