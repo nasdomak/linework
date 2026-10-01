@@ -1,14 +1,14 @@
 {
   "schema": 1,
   "project": "linework",
-  "updated": "2026-09-30T21:37:31Z",
+  "updated": "2026-10-01T05:24:27Z",
   "session_built_workbench": 2,
   "loop_enabled": true,
   "loop_note": "Set by a sentence from Marco: 'vai' turns this true, 'fermati' turns it false. tools/loop.py go / stop do it.",
   "current_phase": 1,
   "open_phase": 1,
   "open_phase_note": "The highest phase the loop may work in without stopping. Only 'vai' at a gate (tools/loop.py go) raises it.",
-  "current_task": "P1-T01",
+  "current_task": null,
   "gate_width": "phase",
   "gate_width_options": [
     "task",
@@ -47,6 +47,11 @@
       "task": "P0-T04",
       "title": "Lay out the monorepo directories with their contracts",
       "finished": "2026-09-30T21:24:13Z"
+    },
+    {
+      "task": "P1-T01",
+      "title": "Specify the commitment form: fields and closed value lists",
+      "finished": "2026-10-01T05:24:27Z"
     }
   ]
 }

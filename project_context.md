@@ -35,27 +35,35 @@ Completeness is the north star. Name **`linework`** (Marco, 17/09/2026).
 
 ---
 
-## Current status (30/09/2026, first unattended run of the loop)
+## Current status (01/10/2026, run 2)
 
-**Workbench: finished, and demonstrated: the scheduled run took P0-T04 end to
-end with nobody watching. Product: phase 0 complete, 5 of 5 tasks.
-The loop is stopped at the gate to phase 1 (the language), waiting for "vai".**
+**Phase 1 (the language) open: Marco said "vai" on 30/09. P1-T01 done.**
 
-### Measured in the unattended run (30/09/2026)
+### Measured in run 2 (01/10/2026)
 
-- **P0-T04 done**: `lang/ geometry/ memory/ engine/ shared/ dxf/` exist, each
-  with an `__init__.py` docstring and a `README.md` stating what it may and
-  may not import. `tests/test_dependency_rules.py` walks the imports
-  independently of `tools/check_core_imports.py`; a deliberate `import numpy`
-  in `geometry/` made it fail, as it must. CI green on all 8 jobs for commit
-  `43863d6`: **51 passed, 0 failed, 0 skipped on each of the six test jobs**.
-- **A loop defect found and fixed**: `finish` advanced `current_phase` when a
-  phase completed, and the gate compared against `current_phase`, so the loop
-  would have walked into phase 1 without stopping. The gate now compares with
-  `state.open_phase`, which only `loop.py go` ("vai") at a gate raises.
-  `tests/test_loop_gate.py` pins it. Reversible; flagged in the report.
-- The CI pictures for `43863d6` are unchanged: the P3-T04 render defects
-  (no plate outline, no walls, no dimension lines, no hatch) are still open.
+- **P1-T01 done -- the commitment form** (ADR 0005). `shared/catalogue_v1.json`
+  is the closed vocabulary (5 domains, 3 acts, 4 units, 12 quantities,
+  10 relations, 7 properties, 30 object kinds), one entry per word with its
+  meaning. `lang/form.py` validates a form against it and refuses with one
+  readable reason per problem. No field takes a coordinate; every number must
+  appear in the user's words (`said`) in the user's unit. Schema
+  (`shared/form_schema_v1.json`) and `docs/CATALOGUE.md` are generated; CI's
+  plan job fails if they are stale. 37 worked forms in four domains.
+- `tests/test_form.py`, 24 tests. Breaking the validator in four places on
+  purpose made it fail each time. **CI green on all 8 jobs for commit
+  `deaef87`: 80 passed, 0 failed, 0 skipped on each of the six test jobs.**
+- Found while writing the examples: a wire from R1 to R1 passed (fixed:
+  `same-target`); "four holes" was refused (fixed: number words up to twenty,
+  English and Italian, count as said). Known accepted limit: "120 x 80"
+  committed as width 80, height 120 passes the form; the script and the
+  picture are where that is caught.
+
+### Measured in run 1 (30/09/2026)
+
+- P0-T04 done; the phase-gate defect in `tools/loop.py` fixed
+  (`state.open_phase`, `tests/test_loop_gate.py`).
+- The P3-T04 render defects (no plate outline, no walls, no dimension lines,
+  no hatch) are still open in the CI pictures.
 
 ### Measured in session 3 (29-30/09/2026)
 
@@ -134,16 +142,14 @@ The loop is stopped at the gate to phase 1 (the language), waiting for "vai".**
 
 ## Last action
 
-30/09/2026, first scheduled unattended run: P0-T04 (monorepo layout and
-dependency rules) done and verified; the phase-gate defect in `tools/loop.py`
-fixed with tests; stopped at the gate to phase 1.
+01/10/2026, run 2: "vai" opened phase 1; P1-T01 (the commitment form) done,
+verified, CI green.
 
 ---
 
 ## Next steps
 
-1. Marco looks at phase 0 and says "vai" for phase 1 (the language), the
-   riskiest phase of the project. `loop.py go` then opens the gate and the next
-   run takes **P1-T01** (the commitment form).
+1. P1-T02 -- the script language, written by the engine from accepted forms.
+   Then P1-T03..T05. The loop stops at the gate to phase 2.
 2. Open the upstream conversation with LibreCAD about `addDimension` /
    `addHatch` when convenient: long lead time, nothing depends on it.
