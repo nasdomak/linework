@@ -459,7 +459,7 @@
               },
               "to": {
                 "items": {
-                  "pattern": "^[a-z][a-z0-9_]{0,39}$",
+                  "pattern": "^[a-z][a-z0-9_]{0,39}( (bottom|bottom_left|bottom_right|left|right|top|top_left|top_right))?$",
                   "type": "string"
                 },
                 "maxItems": 1,
@@ -514,7 +514,7 @@
               },
               "to": {
                 "items": {
-                  "pattern": "^[a-z][a-z0-9_]{0,39}$",
+                  "pattern": "^[a-z][a-z0-9_]{0,39}( (bottom|bottom_left|bottom_right|left|right|top|top_left|top_right))?$",
                   "type": "string"
                 },
                 "maxItems": 1,
@@ -560,7 +560,7 @@
               },
               "to": {
                 "items": {
-                  "pattern": "^[a-z][a-z0-9_]{0,39}$",
+                  "pattern": "^[a-z][a-z0-9_]{0,39}( (bottom|bottom_left|bottom_right|left|right|top|top_left|top_right))?$",
                   "type": "string"
                 },
                 "maxItems": 1,
@@ -656,7 +656,7 @@
               },
               "to": {
                 "items": {
-                  "pattern": "^[a-z][a-z0-9_]{0,39}$",
+                  "pattern": "^[a-z][a-z0-9_]{0,39}( (bottom|bottom_left|bottom_right|left|right|top|top_left|top_right))?$",
                   "type": "string"
                 },
                 "maxItems": 1,
@@ -714,7 +714,7 @@
               },
               "to": {
                 "items": {
-                  "pattern": "^[a-z][a-z0-9_]{0,39}$",
+                  "pattern": "^[a-z][a-z0-9_]{0,39}( (bottom|bottom_left|bottom_right|left|right|top|top_left|top_right))?$",
                   "type": "string"
                 },
                 "maxItems": 1,

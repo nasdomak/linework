@@ -40,6 +40,11 @@ class AnchoringError(_script.ScriptError):
     """A script whose drawing is not one determinate drawing."""
 
 
+def _bases(rel):
+    """The objects a relation clause names, without any edge or corner (D-003)."""
+    return [_form.split_target(t)[0] for t in rel.targets]
+
+
 class _Object(object):
     def __init__(self, st):
         self.name, self.kind, self.line = st.name, st.kind, st.line
@@ -114,7 +119,7 @@ def _state(script):
             order.remove(st.name)
             for name in order:
                 o = objects[name]
-                if any(st.name in r.targets for r in o.relations):
+                if any(st.name in _bases(r) for r in o.relations):
                     problems.append(AnchoringError(
                         st.line, 'removing "%s" leaves "%s" (line %d) without the object it is '
                         "placed by; place it relative to something else first"
@@ -196,7 +201,7 @@ def problems(script, catalogue=None):
     undetermined = set()
     for name in order:
         obj = objects[name]
-        bad = [t for r in obj.relations for t in r.targets if t in undetermined]
+        bad = [t for r in obj.relations for t in _bases(r) if t in undetermined]
         try:
             _plan_one(obj, objects, cat)
         except AnchoringError as exc:

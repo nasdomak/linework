@@ -1,14 +1,14 @@
 {
   "schema": 1,
   "project": "linework",
-  "updated": "2026-10-02T06:48:23Z",
+  "updated": "2026-10-02T06:48:25Z",
   "session_built_workbench": 2,
   "loop_enabled": true,
   "loop_note": "Set by a sentence from Marco: 'vai' turns this true, 'fermati' turns it false. tools/loop.py go / stop do it.",
   "current_phase": 2,
   "open_phase": 2,
   "open_phase_note": "The highest phase the loop may work in without stopping. Only 'vai' at a gate (tools/loop.py go) raises it.",
-  "current_task": null,
+  "current_task": "P2-T04",
   "gate_width": "phase",
   "gate_width_options": [
     "task",

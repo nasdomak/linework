@@ -72,6 +72,22 @@ def default_catalogue():
     return _CAT
 
 
+def split_target(target):
+    """("plate1", "top") for "plate1 top", ("plate1", None) for "plate1". A target
+    names an object, optionally followed by one of its edges or corners (D-003)."""
+    if isinstance(target, str) and " " in target:
+        base, _, edge = target.partition(" ")
+        return base, edge
+    return target, None
+
+
+def target_pattern(cat=None):
+    """The JSON-schema pattern of a target: a name, optionally an edge or corner."""
+    cat = cat or default_catalogue()
+    edges = "|".join(sorted(cat.get("edges", {})))
+    return NAME_PATTERN[:-1] + ("( (%s))?$" % edges if edges else "$")
+
+
 # --------------------------------------------------------------------- verdict
 
 class Problem(object):
@@ -597,9 +613,26 @@ class _Check(object):
                          % (word, rel["targets"], "" if rel["targets"] == 1 else "s", len(to)))
             for j, t in enumerate(to):
                 tp = "%s.to[%d]" % (path, j)
+                if isinstance(t, str) and " " in t:
+                    # a target may name an edge or a corner: "plate1 top" (D-003)
+                    base, _, edge = t.partition(" ")
+                    if edge not in cat.get("edges", {}):
+                        self.p.append(_unknown_word(tp, edge, "edge or corner", "edges",
+                                                    cat.get("edges", {})))
+                        continue
+                    if not rel.get("edge_targets"):
+                        self.add("no-edge", tp, '"%s" measures from the whole object, not from '
+                                 'an edge or a corner: write "%s" alone'
+                                 % (word.replace("_", " "), base))
+                        continue
+                    if base in cat["reserved_names"]:
+                        self.add("no-edge", tp, '"%s" is a point; it has no %s'
+                                 % (base, edge.replace("_", "-")))
+                        continue
+                    t = base
                 if not self.name(tp, t, "a target"):
                     continue
-                if t in to[:j]:
+                if t in [split_target(x)[0] for x in to[:j]]:
                     self.add("same-target", tp,
                              '"%s" is named twice; "%s" needs %d different targets'
                              % (t, word, rel["targets"]))
@@ -694,7 +727,9 @@ def build_schema(cat=None):
         rel = cat["relations"][word]
         props = {"relation": {"const": word},
                  "to": {"type": "array", "minItems": rel["targets"], "maxItems": rel["targets"],
-                        "items": {"type": "string", "pattern": NAME_PATTERN}}}
+                        "items": {"type": "string",
+                                  "pattern": (target_pattern(cat) if rel.get("edge_targets")
+                                              else NAME_PATTERN)}}}
         required = ["relation", "to"]
         for param, need in sorted(rel.get("params", {}).items()):
             spec = cat["parameters"][param]
@@ -806,6 +841,17 @@ def catalogue_text(cat=None):
         else:
             L.append("- **`%s`** -- %s A number (quantity `%s`)." % (p, e["meaning"], e["quantity"]))
     L.append("")
+    if cat.get("edges"):
+        takers = ", ".join("`%s`" % w for w in sorted(cat["relations"])
+                           if cat["relations"][w].get("edge_targets"))
+        L.extend(["### Edges and corners of a target", "",
+                  "A target may be followed by one of these words, and the relation then "
+                  "measures from that edge or corner instead of from the whole object: "
+                  "`offset from plate1 top by 15 mm on side below`. Only %s take them; a "
+                  "reserved name such as `origin` is a point and has none." % takers, ""])
+        for w in sorted(cat["edges"]):
+            L.append("- **`%s`** -- %s" % (w, cat["edges"][w]["meaning"]))
+        L.append("")
     table("Reserved names", cat["reserved_names"])
 
     L.extend(["## Properties", ""])

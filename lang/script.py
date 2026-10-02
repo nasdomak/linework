@@ -495,6 +495,15 @@ def _name(L, tok, what):
     return word
 
 
+def _edge(L, toks, i, targets, cat):
+    """An edge or corner word right after a target ("plate1 top") joins it (D-003).
+    Whether the relation accepts one is the form's call, with its own message."""
+    if i < len(toks) and toks[i][2] == "word" and toks[i][1] in cat.get("edges", {}):
+        targets[-1] = "%s %s" % (targets[-1], toks[i][1])
+        return i + 1
+    return i
+
+
 def _unit(L, toks, i, quantity, cat, end_col):
     measure = cat["quantities"][quantity]["measure"]
     if measure == "count":
@@ -553,6 +562,7 @@ def _clause(L, col, text, cat):
         targets = [_name(L, _need(L, toks, i, "the object it is %s" % " ".join(words), end),
                          "what follows \"%s\"" % " ".join(words))]
         i += 1
+        i = _edge(L, toks, i, targets, cat)
         if spec["targets"] == 2:
             tok = _need(L, toks, i, 'the word "and" and a second object', end)
             if tok[1] != "and":
@@ -561,6 +571,7 @@ def _clause(L, col, text, cat):
             targets.append(_name(L, _need(L, toks, i + 1, "the second object", end),
                                  'what follows "and"'))
             i += 2
+            i = _edge(L, toks, i, targets, cat)
         params = {}
         while i < len(toks):
             c, w, _ = toks[i]
@@ -920,7 +931,7 @@ def check(script, known=None):
     def run(statements, k):
         for s in statements:
             tainted = [(c, t) for c in s.clauses if c.kind == "relation"
-                       for t in c.targets if k.get(t) == "free"]
+                       for t in c.targets if k.get(_form.split_target(t)[0]) == "free"]
             if tainted:
                 c, t = tainted[0]
                 errors.append(ScriptError(
@@ -947,7 +958,8 @@ def check(script, known=None):
                 bad = '"%s" is a reserved name' % item.name
             else:
                 for c in item.clauses:
-                    missing = [t for t in c.targets if t not in known
+                    missing = [t for t in (_form.split_target(x)[0] for x in c.targets)
+                               if t not in known
                                and t not in _form.default_catalogue()["reserved_names"]]
                     if missing:
                         bad = 'in "%s": there is no object called "%s"' % (c, missing[0])

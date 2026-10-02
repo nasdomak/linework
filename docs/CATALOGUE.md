@@ -86,6 +86,19 @@ Every relation names its reference frame: what of the target it measures from, a
 - **`distance`** -- How far from the target. A number (quantity `distance`).
 - **`side`** -- Which side of the target the object goes on. Values: `above` -- Towards the top of the sheet from the target.; `below` -- Towards the bottom of the sheet from the target.; `left` -- Towards the left of the sheet from the target.; `right` -- Towards the right of the sheet from the target.
 
+### Edges and corners of a target
+
+A target may be followed by one of these words, and the relation then measures from that edge or corner instead of from the whole object: `offset from plate1 top by 15 mm on side below`. Only `aligned_with`, `at`, `centred_on`, `next_to`, `offset_from` take them; a reserved name such as `origin` is a point and has none.
+
+- **`bottom`** -- The target's bottom edge: the horizontal line along its bottom.
+- **`bottom_left`** -- The target's bottom-left corner: one point.
+- **`bottom_right`** -- The target's bottom-right corner: one point.
+- **`left`** -- The target's left edge: the vertical line along its left side.
+- **`right`** -- The target's right edge: the vertical line along its right side.
+- **`top`** -- The target's top edge: the horizontal line along its top, from its left side to its right side. 'offset from plate1 top by 15 mm on side below' puts the object's top 15 mm under it.
+- **`top_left`** -- The target's top-left corner: one point.
+- **`top_right`** -- The target's top-right corner: one point.
+
 ## Reserved names
 
 | Word | Meaning |

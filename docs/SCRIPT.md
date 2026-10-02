@@ -105,6 +105,27 @@ always exists.
 Sides are `left`, `right`, `above`, `below` -- directions on the sheet; axes are
 `horizontal` and `vertical`.
 
+### Measuring from an edge or a corner
+
+A target may be followed by one of its edges (`top`, `bottom`, `left`,
+`right`) or corners (`top_left`, `top_right`, `bottom_left`, `bottom_right`).
+The relation then measures from that edge or corner, which is how a mechanical
+drawing is dimensioned (decision D-003, ADR 0013). Only `at`, `centred on`,
+`next to`, `offset from` and `aligned with` take them; `origin` is a point and
+has none.
+
+```linework
+linework script 1
+domain mechanical
+
+add plate plate1: at origin, width 200 mm, height 120 mm
+add hole h1: on plate1, offset from plate1 top by 15 mm on side below, offset from plate1 left by 20 mm on side right, diameter 10 mm
+add hole h2: on plate1, centred on plate1 top_right, diameter 6 mm
+```
+
+`h1` sits 15 mm under the top edge and 20 mm in from the left edge: its
+extent is x 20 to 30, y 95 to 105, exactly.
+
 ## Where the first object goes, and what "next to" means
 
 On a blank sheet "a 5 x 4 room" has no obvious *where*, and "next to it" has no

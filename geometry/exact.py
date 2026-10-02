@@ -569,6 +569,18 @@ class Num(object):
         if self.F is not None:
             self.F.refine()
 
+    def floor(self):
+        """The largest integer not above the number, exactly."""
+        if self.is_rational():
+            return self.c.numerator // self.c.denominator
+        while True:
+            lo, hi = self.interval()
+            a = lo.numerator // lo.denominator
+            b = hi.numerator // hi.denominator
+            if a == b:
+                return a
+            self.refine()
+
     # -- arithmetic
     @staticmethod
     def _pair(a, b):

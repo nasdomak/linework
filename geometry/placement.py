@@ -58,6 +58,36 @@ class Extent(object):
 
 ORIGIN = Extent(Fraction(0), Fraction(0), Fraction(0), Fraction(0), "point")
 
+EDGES = ("top", "bottom", "left", "right",
+         "top_left", "top_right", "bottom_left", "bottom_right")
+
+
+def sub_extent(e, edge):
+    """An edge of an extent as a zero-thickness box (its reference point is its
+    left or lower end), a corner as a point (D-003)."""
+    x0, y0, x1, y1 = e.lo["x"], e.lo["y"], e.hi["x"], e.hi["y"]
+    if edge == "top":
+        return Extent(x0, y1, x1, y1, "box")
+    if edge == "bottom":
+        return Extent(x0, y0, x1, y0, "box")
+    if edge == "left":
+        return Extent(x0, y0, x0, y1, "box")
+    if edge == "right":
+        return Extent(x1, y0, x1, y1, "box")
+    corners = {"top_left": (x0, y1), "top_right": (x1, y1),
+               "bottom_left": (x0, y0), "bottom_right": (x1, y0)}
+    if edge in corners:
+        x, y = corners[edge]
+        return Extent(x, y, x, y, "point")
+    raise ValueError('"%s" is not an edge or a corner' % edge)
+
+
+def target_extent(placed, target):
+    """The extent a relation measures from: the object, or one edge or corner of it."""
+    name, _, edge = target.partition(" ")
+    e = placed[name]
+    return sub_extent(e, edge) if edge else e
+
 
 def _interval(obj, axis, rel, placed):
     """The object's [lo, hi] on `axis`, from the one relation that fixes it."""
@@ -65,7 +95,7 @@ def _interval(obj, axis, rel, placed):
     if word not in SUPPORTED:
         raise NotPlacedYet(obj["name"], '"%s" is placed by the solver of phase 2, not yet '
                            "here" % word.replace("_", " "))
-    target = placed[rel["to"][0]]
+    target = target_extent(placed, rel["to"][0])
     size = obj["size"][axis]
     half = size / 2
     if word == "at":

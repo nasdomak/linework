@@ -34,3 +34,7 @@ the root `README.md`, "Repository layout".
   reported, never closed quietly.
 - `factor.py` -- factoring over Q (Zassenhaus), so every field is described by
   the minimal polynomial of its generator (ADR 0012, "Change to ADR 0010").
+- `distribute.py` -- distributions along a segment, on a circle and on grids,
+  by count or pitch, with the leftover reported (ADR 0013).
+- `notable.py` -- the named notable points of every shape and of a placed
+  rectangle, for dimensions to attach to (ADR 0013).

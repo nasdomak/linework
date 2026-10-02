@@ -117,6 +117,16 @@ def check(cat):
         for v, ve in vals.items():
             _meaning("properties.%s.%s" % (word, v), ve, p)
 
+    # edges and corners a target may name (D-003): every word has a meaning, and
+    # a relation says whether it measures from one
+    for word, entry in cat.get("edges", {}).items():
+        _meaning("edges.%s" % word, entry, p)
+    for word, entry in cat["relations"].items():
+        if "edge_targets" in entry and not isinstance(entry["edge_targets"], bool):
+            p.append("relations.%s: 'edge_targets' must be true or false" % word)
+        if entry.get("edge_targets") and not cat.get("edges"):
+            p.append("relations.%s takes edge targets but there is no block 'edges'" % word)
+
     for word, entry in cat["objects"].items():
         where = "objects.%s" % word
         _meaning(where, entry, p)
@@ -163,8 +173,8 @@ def words(cat):
     """Every vocabulary word, as (block, word) pairs -- one catalogue entry each."""
     out = []
     for block in ("domains", "acts", "units", "quantities", "relations",
-                  "reserved_names", "objects"):
-        out += [(block, w) for w in cat[block]]
+                  "edges", "reserved_names", "objects"):
+        out += [(block, w) for w in cat.get(block, {})]
     for name, entry in cat["parameters"].items():
         out.append(("parameters", name))
         out += [("parameters.%s" % name, v) for v in entry.get("values", {})]
