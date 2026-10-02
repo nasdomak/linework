@@ -35,11 +35,12 @@ Completeness is the north star. Name **`linework`** (Marco, 17/09/2026).
 
 ---
 
-## Current status (01/10/2026, run 2)
+## Current status (02/10/2026, run 2)
 
-**Phase 1 (the language) open: Marco said "vai" on 30/09. P1-T01 and P1-T02 done.**
+**Phase 1 (the language) open: Marco said "vai" on 30/09. P1-T01..T04 done;
+P1-T05 (the escape hatch) is the last task before the gate to phase 2.**
 
-### Measured in run 2 (01/10/2026)
+### Measured in run 2 (01-02/10/2026)
 
 - **P1-T01 done -- the commitment form** (ADR 0005). `shared/catalogue_v1.json`
   is the closed vocabulary (5 domains, 3 acts, 4 units, 12 quantities,
@@ -67,6 +68,23 @@ Completeness is the north star. Name **`linework`** (Marco, 17/09/2026).
 - Found by P1-T02 and fixed in `lang/form.py`: `known={}` (an empty drawing)
   was read as "no drawing", so references to missing objects passed.
 - Trap recorded in `CLAUDE.md`: mutation checks can read a stale `.pyc`.
+- **P1-T03 done -- open choices** (ADR 0007): `choice <name>: open`,
+  `option <choice> <label>: <statement>`, `decided <label>`. `drawable()`
+  refuses any open choice, naming it. `tests/test_intent.py`, 10 tests. CI
+  green, commit `96b8247`, 109 passed on each job.
+- **P1-T04 done -- the blank page** (ADR 0008). First object `at origin`;
+  every relation names its frame in the catalogue (`frame`, `fixes`); each
+  object's left-right and up-down place decided by exactly one relation, or
+  refused. `lang/anchoring.py` decides, `geometry/placement.py` computes exact
+  mm (Fractions) for at / centred on / next to / offset from / aligned with.
+  Sides `inside`/`outside` removed (no edge named). Three ambiguous SCRIPT.md
+  examples found and fixed. `tests/test_anchoring.py`, 16 tests, hand-computed
+  values. **CI green, commit `d4b3378`: 125 passed, 0 failed, 0 skipped on
+  each of the six test jobs.**
+- **Open decisions for Marco: D-002** (who computes along / between /
+  distributed: default, a new task P2-T05) and **D-003** (measuring from a
+  named edge: default, edge targets in phase 2 with P2-T04). Defaults apply
+  on the next run if unanswered; both reversible.
 
 ### Measured in run 1 (30/09/2026)
 
@@ -152,14 +170,15 @@ Completeness is the north star. Name **`linework`** (Marco, 17/09/2026).
 
 ## Last action
 
-01/10/2026, run 2: "vai" opened phase 1; P1-T01 (the commitment form) and
-P1-T02 (the script language) done, verified, CI green.
+02/10/2026, run 2: P1-T01..T04 done, verified, CI green. Two decisions
+queued (D-002, D-003).
 
 ---
 
 ## Next steps
 
-1. P1-T03 (intent and alternatives), P1-T04 (the blank page), P1-T05 (the
-   escape hatch). The loop stops at the gate to phase 2.
-2. Open the upstream conversation with LibreCAD about `addDimension` /
+1. P1-T05 (the escape hatch). Then the loop stops at the gate to phase 2.
+2. Next run: `take-defaults` applies D-002 and D-003 if Marco has not
+   answered -- D-002 adds task P2-T05 to the backlog and the plan.
+3. Open the upstream conversation with LibreCAD about `addDimension` /
    `addHatch` when convenient: long lead time, nothing depends on it.
