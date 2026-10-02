@@ -29,3 +29,8 @@ the root `README.md`, "Repository layout".
 - `ops.py` -- offset, split, trim, extend, fillet, chamfer, tangents from a
   point and between circles (ADR 0011): exact, and refused with the reason
   when the request is ambiguous or does not fit.
+- `contours.py` -- closed contours from loose pieces (ADR 0012): exact closure
+  only; open chains, the gaps between loose ends, branches and duplicates are
+  reported, never closed quietly.
+- `factor.py` -- factoring over Q (Zassenhaus), so every field is described by
+  the minimal polynomial of its generator (ADR 0012, "Change to ADR 0010").

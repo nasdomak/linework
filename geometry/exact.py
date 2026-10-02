@@ -26,6 +26,8 @@ Standard library only (CORE package).
 from fractions import Fraction
 from math import isqrt
 
+from geometry.factor import factor_q
+
 ZERO = Fraction(0)
 ONE = Fraction(1)
 
@@ -184,90 +186,45 @@ def _sgn(x):
     return (x > 0) - (x < 0)
 
 
-def simplest_between(lo, hi):
-    """The fraction with the smallest denominator in [lo, hi]."""
-    fl = lo.numerator // lo.denominator
-    if fl == lo:
-        return Fraction(fl)
-    if fl + 1 <= hi:
-        return Fraction(fl + 1)
-    return fl + 1 / simplest_between(1 / (hi - fl), 1 / (lo - fl))
-
-
 def _bound(p):
     lead = abs(p[-1])
     return 1 + max(abs(c) / lead for c in p[:-1]) if len(p) > 1 else ONE
 
 
-def _integer_lead(p):
-    den = 1
-    for c in p:
-        den = den * c.denominator // _gcd(den, c.denominator)
-    ints = [int(c * den) for c in p]
-    g = 0
-    for c in ints:
-        g = _gcd(g, abs(c))
-    return abs(ints[-1] // g) if g else 1
-
-
-def _gcd(a, b):
-    while b:
-        a, b = b, a % b
-    return a
-
-
 def real_roots(p):
     """Every real root of p, ascending: a Fraction when it is rational, otherwise
-    a Field whose generator is that root."""
+    a Field whose generator is that root, described by its minimal polynomial
+    (the irreducible factor of p it is a root of)."""
     p = psqfree(pnorm(p))
     if len(p) <= 1:
         return []
-    if len(p) == 2:
-        return [-p[0] / p[1]]
+    out = []
+    for fac in factor_q(p):
+        if len(fac) == 2:
+            out.append(-fac[0] / fac[1])
+        else:
+            out.extend(_isolate(fac))
+    return sorted(out, key=_root_key)
+
+
+def _isolate(p):
+    """Fields for the real roots of an irreducible p of degree >= 2 (no root of
+    it is rational, so no endpoint of a bisection is ever a root)."""
     seq = sturm(p)
     b = _bound(p)
-    lead = _integer_lead(p)
-    width = Fraction(1, 2 * lead * lead)
-    exact, isolated = set(), []
-    work = [(-b, b)]
+    out, work = [], [(-b, b)]
     while work:
         lo, hi = work.pop()
         n = count_roots(seq, lo, hi)
         if n == 0:
             continue
-        if peval(p, hi) == 0:
-            exact.add(hi)
-            if n == 1:
-                continue
-        elif n == 1 and peval(p, lo) != 0:
-            # refine until a rational root, if it is one, is the simplest fraction here
-            while hi - lo > width:
-                mid = (lo + hi) / 2
-                v = peval(p, mid)
-                if v == 0:
-                    lo = hi = mid
-                    break
-                if _sgn(v) == _sgn(peval(p, lo)):
-                    lo = mid
-                else:
-                    hi = mid
-            if lo == hi:
-                exact.add(lo)
-                continue
-            s = simplest_between(lo, hi)
-            if peval(p, s) == 0:
-                exact.add(s)
-            else:
-                isolated.append((lo, hi))
+        if n == 1:
+            out.append(Field(p, lo, hi))
             continue
         mid = (lo + hi) / 2
         work.append((lo, mid))
         work.append((mid, hi))
-    rest = p
-    for r in exact:
-        rest = pdivmod(rest, [-r, ONE])[0]
-    out = sorted(exact) + [Field(rest, lo, hi) for lo, hi in isolated]
-    return sorted(out, key=_root_key)
+    return out
 
 
 def _root_key(r):
