@@ -18,3 +18,11 @@ the root `README.md`, "Repository layout".
   centred on, next to, offset from, aligned with, and the inside check, in
   fractions of a millimetre, with one canonical text per drawing. Works on plain
   records; imports nothing from `lang/`.
+- `exact.py` -- exact real numbers (ADR 0010): Fractions and real algebraic
+  numbers g(a) in Q(a), with exact `+ - * /`, `sqrt`, comparison and zero test;
+  polynomials, Sturm root isolation, resultants. No tolerance anywhere; decimals
+  only on request, correctly rounded.
+- `primitives.py` -- point, segment, arc, circle, ellipse (and elliptical arc),
+  degenerate shapes refused when made, and `intersect(a, b)` for every pair:
+  points (tangent or not), shared pieces, and notes naming parallel, collinear,
+  tangent, concentric, coincident, outside.
