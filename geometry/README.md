@@ -11,3 +11,10 @@ CORE package: tools/check_core_imports.py and tests/test_dependency_rules.py enf
 
 The same contract is stated in `geometry/__init__.py`; the repository table is in
 the root `README.md`, "Repository layout".
+
+## What is here
+
+- `placement.py` -- exact positions from anchoring decisions (ADR 0008): at,
+  centred on, next to, offset from, aligned with, and the inside check, in
+  fractions of a millimetre, with one canonical text per drawing. Works on plain
+  records; imports nothing from `lang/`.

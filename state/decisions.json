@@ -1,7 +1,28 @@
 {
   "schema": 1,
   "note": "The decision queue. The loop never blocks on a question: it queues it here with a proposed default and a rationale, carries on with everything the question does not block, and on the next run takes the default if Marco has not answered - recording it as a reversible decision and flagging it in the report. Anything irreversible has reversible=false and waits, however long it takes.",
-  "open": [],
+  "open": [
+    {
+      "id": "D-002",
+      "raised": "2026-10-02",
+      "question": "Who computes the exact positions for along, between and distributed over? No phase-2 task places objects by relations; P2-T04 covers distributions as geometry, not as script relations.",
+      "context": "Found while doing P1-T04. Reversible: a task can be added, reordered or dropped at any time.",
+      "proposed_default": "Add a task P2-T05 'Place by relations: every relation computed exactly', after P2-T04, extending geometry/placement.py to along, between, distributed over and corner features, with hand-computed tests per relation.",
+      "rationale": "P1-T04 decided WHICH relation fixes each direction of every object (lang/anchoring.py) and computed the numbers for at, centred on, next to, offset from and aligned with. The rest needs real geometry (edges, long axes, spans), which is phase 2's job; without a task naming it, nothing in the plan would ever compute them, and the solver door would stay half built.",
+      "reversible": true,
+      "blocks": []
+    },
+    {
+      "id": "D-003",
+      "raised": "2026-10-02",
+      "question": "How does the user say 'n mm in from the top edge of the plate'? Removing the sides inside/outside (they name no edge) left no way to measure from one edge of an object towards its interior.",
+      "context": "Found while doing P1-T04: 'offset from plate1 by 15 mm on side inside' in the SCRIPT.md bracket was ambiguous (which edge?) and passed silently before the anchoring rules.",
+      "proposed_default": "In phase 2 (with notable points, P2-T04), let a target name an edge or a corner of an object -- 'plate1 top', 'plate1 top_left' -- so 'offset from plate1 top by 15 mm on side below' is exact. Until then, such holes are placed relative to another feature (as the SCRIPT.md bracket does).",
+      "rationale": "Measuring from an edge is how a mechanical drawing is dimensioned, so it cannot stay missing. Edges and corners are exactly the notable points P2-T04 exposes, so the grammar word and the geometry arrive together; adding the word now, before anything can compute it, would let the script say what the solver cannot do.",
+      "reversible": true,
+      "blocks": []
+    }
+  ],
   "settled": [
     {
       "id": "D-000",

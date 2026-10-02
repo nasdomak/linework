@@ -806,14 +806,15 @@ def spec_blocks(path=SPEC_PATH):
     """The fenced examples of docs/SCRIPT.md: (kind, first line number, text).
 
     kind is "linework" for a script that must be accepted and round-trip, and
-    "linework-refused" for one that must be refused; a refused example's last
-    line is a comment "# refused: line N: <message>" stating the error.
+    "linework-refused" for one that must be refused, and "linework-unplaced" for
+    a sound script that is not one determinate drawing (P1-T04); their last line
+    is a comment "# refused: ..." or "# unplaced: ..." stating the error.
     """
     with open(path, "r", encoding="utf-8") as fh:
         lines = fh.read().split("\n")
     out, i = [], 0
     while i < len(lines):
-        m = re.match(r"^```(linework(?:-refused)?)\s*$", lines[i])
+        m = re.match(r"^```(linework(?:-refused|-unplaced)?)\s*$", lines[i])
         if m:
             j = i + 1
             while lines[j] != "```":

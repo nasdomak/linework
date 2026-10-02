@@ -86,9 +86,10 @@
     },
     {
       "title": "Four holes spread along the top edge",
-      "user_text": "four 6.5 mm holes along the top of the plate, 15 mm in from the edge",
+      "user_text": "four 6.5 mm holes along the plate, 40 mm above the centre hole",
       "known": {
-        "plate1": "plate"
+        "plate1": "plate",
+        "hole_centre": "threaded_hole"
       },
       "form": {
         "form": "linework/commitment",
@@ -119,14 +120,14 @@
           {
             "relation": "offset_from",
             "to": [
-              "plate1"
+              "hole_centre"
             ],
             "distance": {
-              "value": 15,
+              "value": 40,
               "unit": "mm",
-              "said": "15 mm in from the edge"
+              "said": "40 mm above the centre hole"
             },
-            "side": "inside"
+            "side": "above"
           }
         ],
         "dimensions": {

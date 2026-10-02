@@ -12,6 +12,7 @@ the old one, never by editing it quietly.
 | [0005](0005-the-commitment-form.md) | The commitment form | accepted, 2026-10-01 |
 | [0006](0006-the-script-language.md) | The script language | accepted, 2026-10-01 |
 | [0007](0007-intent-and-alternatives.md) | Design intent and alternatives | accepted, 2026-10-01 |
+| [0008](0008-the-blank-page.md) | The blank page: anchoring by rule | accepted, 2026-10-02 |
 
 Each ADR states its status, date, context, decision, consequences, and how it is
 verified. `tests/test_repo_shape.py` checks the ones the plan depends on.

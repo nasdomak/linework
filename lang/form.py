@@ -415,9 +415,8 @@ class _Check(object):
                         name = obj["name"]
                         if name in cat["reserved_names"]:
                             self.add("reserved-name", "object.name",
-                                     '"%s" is reserved (%s) and cannot be the name of an object'
-                                     % (name, cat["reserved_names"][name]["meaning"].split(".")[0]
-                                        .lower()))
+                                     '"%s" is a reserved name: it always exists, and cannot be '
+                                     "the name of an object" % name)
                             name = None
 
         entry = cat["objects"].get(kind) if kind else None
@@ -779,12 +778,24 @@ def catalogue_text(cat=None):
     table("Units", cat["units"], ("Measures", lambda e: e["measure"]))
     table("Quantities (dimensions)", cat["quantities"], ("Measure", lambda e: e["measure"]))
 
+    L.extend(["## The sheet and reference points", "",
+              cat["sheet"]["meaning"], ""])
+    for w in sorted(cat["reference_points"]):
+        L.append("- **%s** -- %s" % (w, cat["reference_points"][w]["meaning"]))
+    L.append("")
     L.extend(["## Relations", "",
-              "| Relation | Targets | Parameters | Meaning |", "|---|---|---|---|"])
+              "Every relation names its reference frame: what of the target it measures "
+              "from, and which part of the object's position it fixes -- *firmly*, or *by "
+              "default* when nothing else fixes that part. The rules are in "
+              "[SCRIPT.md](SCRIPT.md), \"Where the first object goes\".", "",
+              "| Relation | Targets | Parameters | Meaning | Reference frame | Fixes |",
+              "|---|---|---|---|---|---|"])
     for w in sorted(cat["relations"]):
         e = cat["relations"][w]
         params = ", ".join("`%s` (%s)" % (p, n) for p, n in sorted(e["params"].items())) or "--"
-        L.append("| `%s` | %d | %s | %s |" % (w, e["targets"], params, e["meaning"]))
+        fixes = ", ".join("%s %s" % (k, v) for k, v in sorted(e["fixes"].items())) or "nothing"
+        L.append("| `%s` | %d | %s | %s | %s | %s |" % (w, e["targets"], params, e["meaning"],
+                                                       e["frame"], fixes))
     L.append("")
     L.extend(["### Relation parameters", ""])
     for p in sorted(cat["parameters"]):
@@ -828,6 +839,8 @@ def catalogue_text(cat=None):
                 place.append("on %s" % " or ".join("`%s`" % h for h in e["host"]))
             if e.get("takes_text"):
                 place.append("takes text")
+            if e.get("placed_by"):
+                place.append("placed by its %s" % e["placed_by"])
             L.append("| `%s` | %s | %s | %s | %s |" % (k, dims or "--", props or "--",
                                                      "; ".join(place) or "--", e["meaning"]))
         L.append("")

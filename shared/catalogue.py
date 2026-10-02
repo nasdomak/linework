@@ -17,6 +17,12 @@ CATALOGUE_VERSION = 1
 CATALOGUE_PATH = os.path.join(HERE, "catalogue_v%d.json" % CATALOGUE_VERSION)
 
 NEEDS = ("required", "optional", "memory")
+# What a relation fixes of the object's position (P1-T04, ADR 0008): the sheet
+# axes x and y; "across" and "along" a side's edge or a target's long axis;
+# "axis" the one named by an aligned_with relation.
+FIX_KEYS = ("x", "y", "across", "along", "axis")
+FIX_STRENGTHS = ("firm", "default")
+PLACED_BY = ("corner",)
 PARAM_NEEDS = ("required", "optional")
 
 
@@ -50,9 +56,13 @@ def check(cat):
     if p:
         return p
 
-    for block in ("domains", "acts", "units", "measures", "reserved_names"):
-        for word, entry in cat[block].items():
+    for block in ("domains", "acts", "units", "measures", "reserved_names",
+                  "reference_points"):
+        for word, entry in cat.get(block, {}).items():
             _meaning("%s.%s" % (block, word), entry, p)
+    _meaning("sheet", cat.get("sheet"), p)
+    if not cat.get("reference_points"):
+        p.append("block 'reference_points' is missing or empty")
 
     for word, entry in cat["units"].items():
         if entry.get("measure") not in cat["measures"]:
@@ -83,6 +93,13 @@ def check(cat):
 
     for word, entry in cat["relations"].items():
         _meaning("relations.%s" % word, entry, p)
+        if not str(entry.get("frame", "")).strip():
+            p.append("relations.%s does not name its reference frame" % word)
+        fixes = entry.get("fixes")
+        if not isinstance(fixes, dict) or not set(fixes) <= set(FIX_KEYS) \
+                or not set(fixes.values()) <= set(FIX_STRENGTHS):
+            p.append("relations.%s: 'fixes' must map some of %s to one of %s"
+                     % (word, FIX_KEYS, FIX_STRENGTHS))
         if entry.get("targets") not in (1, 2):
             p.append("relations.%s must take 1 or 2 targets" % word)
         for param, need in entry.get("params", {}).items():
@@ -128,10 +145,15 @@ def check(cat):
         for host in entry.get("host", []):
             if host not in cat["objects"]:
                 p.append("%s is hosted by unknown kind '%s'" % (where, host))
+        if "placed_by" in entry and entry["placed_by"] not in PLACED_BY:
+            p.append("%s: placed_by must be one of %s" % (where, PLACED_BY))
+        if entry.get("placed_by") == "corner" and "corner" not in entry.get("properties", {}):
+            p.append("%s is placed by its corner but has no property 'corner'" % where)
         if entry.get("host") and "on" not in entry.get("needs_relation", []):
             p.append("%s has a host but does not need the relation 'on'" % where)
         unknown = set(entry) - {"domain", "meaning", "dimensions", "properties",
-                                "exactly_one_of", "needs_relation", "host", "takes_text"}
+                                "exactly_one_of", "needs_relation", "host", "takes_text",
+                                "placed_by"}
         if unknown:
             p.append("%s has unknown keys %s" % (where, sorted(unknown)))
     return p

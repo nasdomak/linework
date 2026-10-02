@@ -19,5 +19,8 @@ the root `README.md`, "Repository layout".
   `python3 -m lang.form write|verify|check`.
 - `script.py` -- the script language (ADR 0006): `parse`, `check`, `from_forms`;
   `python3 -m lang.script check FILE...`. Specification: `docs/SCRIPT.md`.
+- `anchoring.py` -- the blank page (ADR 0008): which relation fixes each
+  direction of every object; refuses what is not determined, fixed twice or
+  suggested twice; `place()` hands the plan to `geometry/placement.py`.
 - `examples/forms/` -- worked forms in the four domains, accepted and refused,
   each refusal stated word for word. Checked by `tests/test_form.py`.

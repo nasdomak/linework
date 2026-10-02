@@ -268,7 +268,7 @@
       ],
       "verification": "tests/test_intent.py asserts a script with an unresolved choice refuses to produce geometry and names the choice",
       "size": "M",
-      "status": "doing",
+      "status": "done",
       "blocked_reason": "",
       "decision": ""
     },
@@ -287,7 +287,7 @@
       ],
       "verification": "tests/test_anchoring.py asserts the same coordinate-free script renders byte-identical geometry twice, and that ambiguity is refused rather than guessed",
       "size": "M",
-      "status": "todo",
+      "status": "doing",
       "blocked_reason": "",
       "decision": ""
     },

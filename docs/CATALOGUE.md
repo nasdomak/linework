@@ -53,33 +53,44 @@ them, in the user's unit.
 | `thickness` | length | The thickness of a wall or a plate. |
 | `width` | length | The extent across the object, perpendicular to its length; for hosted objects, along the host. |
 
+## The sheet and reference points
+
+The one frame every position is finally measured in: x to the right, y up, from origin. left, right, above and below are directions on the sheet, never relative to an object's own rotation.
+
+- **box** -- Rectangular things (rectangle, plate, room, plot, square column, parking bay): the lower-left corner.
+- **line** -- Straight things (line, wall, road, pipe, wire, slot): the start of their axis.
+- **round** -- Round things (circle, hole, threaded hole, manhole, round column, regular polygon) and schematic symbols: the centre.
+- **text** -- Text: the start of its baseline.
+
 ## Relations
 
-| Relation | Targets | Parameters | Meaning |
-|---|---|---|---|
-| `aligned_with` | 1 | `axis` (required) | Lined up with the target along the given axis. |
-| `along` | 1 | `side` (optional) | Runs along the whole length of the target, on the given side if one is named. |
-| `at` | 1 | -- | The object's reference point coincides with the target's: 'at origin' anchors the first object of a drawing. |
-| `between` | 2 | -- | Spans from the first target to the second: a wire between two terminals, a wall between two rooms. |
-| `centred_on` | 1 | -- | The object's centre coincides with the target's centre; on a wall, the wall's midpoint along its length. |
-| `distributed_over` | 1 | `count` (required) | The given number of copies, equally spaced over the target. |
-| `inside` | 1 | -- | Entirely within the target's outline. |
-| `next_to` | 1 | `side` (required) | Touching the target, on the given side. |
-| `offset_from` | 1 | `distance` (required), `side` (required) | At the given distance from the target, on the given side. |
-| `on` | 1 | -- | Hosted by the target: a window on a wall, a hole on a plate, a junction on a wire. |
+Every relation names its reference frame: what of the target it measures from, and which part of the object's position it fixes -- *firmly*, or *by default* when nothing else fixes that part. The rules are in [SCRIPT.md](SCRIPT.md), "Where the first object goes".
+
+| Relation | Targets | Parameters | Meaning | Reference frame | Fixes |
+|---|---|---|---|---|---|
+| `aligned_with` | 1 | `axis` (required) | Lined up with the target along the given axis. | The target's centre. On axis horizontal the centres are at the same height (fixes up-down); on axis vertical they are on one vertical line (fixes left-right). | axis firm |
+| `along` | 1 | `side` (optional) | Runs along the whole length of the target, on the given side if one is named. | The target's edge on the named side, or its long axis when no side is named. The object lies against that edge, outside the target (or on the axis), and starts where the target starts: fixes the place across the edge, and along it by default. | across firm, along default |
+| `at` | 1 | -- | The object's reference point coincides with the target's: 'at origin' anchors the first object of a drawing. | The target's reference point. The object's reference point goes there: fixes both. | x firm, y firm |
+| `between` | 2 | -- | Spans from the first target to the second: a wire between two terminals, a wall between two rooms. | The two targets' reference points. The object spans from the first to the second: fixes both. | x firm, y firm |
+| `centred_on` | 1 | -- | The object's centre coincides with the target's centre; on a wall, the wall's midpoint along its length. | The target's centre (a wall's midpoint). The object's centre goes there: fixes left-right and up-down. | x firm, y firm |
+| `distributed_over` | 1 | `count` (required) | The given number of copies, equally spaced over the target. | The target's long axis. The copies are equally spaced along it (fixes that direction) and, by default, centred across it. Needs the target's direction to be known. | across default, along firm |
+| `inside` | 1 | -- | Entirely within the target's outline. | The target's outline. A check, not a place: the object must lie within it, and another relation says where. | nothing |
+| `next_to` | 1 | `side` (required) | Touching the target, on the given side. | The target's edge on the named side. The object's facing edge touches it: fixes the place across that edge; along it, by default, the two are flush at the left (above, below) or at the bottom (left, right). | across firm, along default |
+| `offset_from` | 1 | `distance` (required), `side` (required) | At the given distance from the target, on the given side. | The target's edge on the named side. The object's facing edge is the given distance beyond it: fixes the place across that edge; along it, by default, the two are flush at the left (above, below) or at the bottom (left, right). | across firm, along default |
+| `on` | 1 | -- | Hosted by the target: a window on a wall, a hole on a plate, a junction on a wire. | The host. Says what the object belongs to and fixes no position by itself: another relation says where on the host. | nothing |
 
 ### Relation parameters
 
 - **`axis`** -- The direction along which two things line up. Values: `horizontal` -- Same height on the sheet: centres on one horizontal line.; `vertical` -- Same position across the sheet: centres on one vertical line.
 - **`count`** -- How many copies to distribute. A number (quantity `count`).
 - **`distance`** -- How far from the target. A number (quantity `distance`).
-- **`side`** -- Which side of the target the object goes on. Values: `above` -- Towards the top of the sheet from the target.; `below` -- Towards the bottom of the sheet from the target.; `inside` -- Towards the inside of the target's outline (a room's interior side of a wall).; `left` -- Towards the left of the sheet from the target.; `outside` -- Towards the outside of the target's outline.; `right` -- Towards the right of the sheet from the target.
+- **`side`** -- Which side of the target the object goes on. Values: `above` -- Towards the top of the sheet from the target.; `below` -- Towards the bottom of the sheet from the target.; `left` -- Towards the left of the sheet from the target.; `right` -- Towards the right of the sheet from the target.
 
 ## Reserved names
 
 | Word | Meaning |
 |---|---|
-| `origin` | The origin of the drawing. Always exists; cannot be added, changed or removed. |
+| `origin` | The origin of the drawing: the point (0, 0) of the sheet. Always exists; cannot be added, changed or removed. The first object of a drawing is placed at origin. |
 
 ## Properties
 
@@ -159,8 +170,8 @@ the user; if they did not give one, the model asks.
 
 | Kind | Dimensions | Properties | Placement | Meaning |
 |---|---|---|---|---|
-| `chamfer` | `length` required | `corner` required | needs `on`; on `plate` | A 45-degree bevel on a corner of a plate; length is the leg. |
-| `fillet` | `radius` required | `corner` required | needs `on`; on `plate` | A rounded corner of a plate. |
+| `chamfer` | `length` required | `corner` required | needs `on`; on `plate`; placed by its corner | A 45-degree bevel on a corner of a plate; length is the leg. |
+| `fillet` | `radius` required | `corner` required | needs `on`; on `plate`; placed by its corner | A rounded corner of a plate. |
 | `hole` | `depth` optional, `diameter` optional, `radius` optional; exactly one of `diameter` / `radius` | `hole_type` optional | needs `on`; on `plate` | A plain round hole in a plate. |
 | `plate` | `height` required, `thickness` optional, `width` required | -- | -- | The outline of a flat rectangular part. |
 | `slot` | `angle` optional, `length` required, `width` required | -- | needs `on`; on `plate` | A straight slot with round ends; length is overall, width is the end diameter. |

@@ -96,14 +96,120 @@ always exists.
 | at | its reference point is the other's | `at origin` |
 | centred on | its centre is the other's centre | `centred on plate1` |
 | along | runs the whole length of it, optionally on one side | `along plot1 on side below` |
-| offset from | at a distance from it, on a side | `offset from plate1 by 15 mm on side inside` |
+| offset from | at a distance from it, on a side | `offset from plate1 by 15 mm on side right` |
 | next to | touching it, on a side | `next to living on side right` |
 | between | spans from one to the other | `between mh1 and mh2` |
 | aligned with | lined up with it, on an axis | `aligned with r1 on axis horizontal` |
 | distributed over | that many copies, equally spaced over it | `distributed over plate1 in 4 copies` |
 
-Sides are `left`, `right`, `above`, `below`, `inside`, `outside`; axes are
+Sides are `left`, `right`, `above`, `below` -- directions on the sheet; axes are
 `horizontal` and `vertical`.
+
+## Where the first object goes, and what "next to" means
+
+On a blank sheet "a 5 x 4 room" has no obvious *where*, and "next to it" has no
+obvious *side*. The script answers both by rule, so nothing is ever guessed.
+
+1. **The first object goes `at origin`**, the point (0, 0) of the sheet. When
+   the model commits the first object of a drawing, it commits `at origin`.
+2. **The sheet is the one frame**: x to the right, y up. `left`, `right`,
+   `above`, `below` are directions on the sheet, never relative to an object's
+   own rotation.
+3. **Every object has a reference point**: the lower-left corner of rectangular
+   things (rooms, plates, plots), the centre of round things and of schematic
+   symbols, the start of the baseline of a text, the start of the axis of
+   straight things (walls, roads, pipes, wires). `at` puts reference point on
+   reference point.
+4. **Every relation names its frame** -- what of the target it measures from,
+   and which part of the object's position it fixes. The full table is in
+   CATALOGUE.md; in short:
+   - `at`, `centred on`, `between` fix the object both ways;
+   - `next to X on side S` puts the object against X's edge on side S, touching
+     it. That fixes it *across* the edge. *Along* the edge it is, by default,
+     flush with X: at the left for `above`/`below`, at the bottom for
+     `left`/`right`. `offset from X by D on side S` is the same with a gap D;
+   - `aligned with X on axis horizontal` puts the centres at one height;
+     `on axis vertical`, on one vertical line;
+   - `along X` lies against an edge of X, or on its long axis;
+     `distributed over X` spreads the copies along X's long axis;
+   - `on` and `inside` place nothing: they say what the object belongs to, and
+     check where it may be.
+5. **"Beside", "by", "adjacent to"** are not script words. They all mean
+   `next to`, and `next to` always names its side. If the user did not say
+   which side, the model asks; it never picks one.
+6. **Each object's left-right place and up-down place are decided exactly
+   once.** A relation that fixes a direction firmly decides it; a default
+   decides it only when nothing firm does. If nothing decides a direction, or two
+   relations decide the same one, the script is refused -- with the line, and
+   the relations involved.
+
+So this script, which holds no coordinate at all, is one drawing and only one:
+
+```linework
+linework script 1
+domain mechanical
+
+add plate plate1: at origin, width 200 mm, height 120 mm
+add hole h_c: on plate1, centred on plate1, diameter 10 mm
+add hole h_r: on plate1, aligned with h_c on axis horizontal, offset from h_c by 30 mm on side right, diameter 6.5 mm
+add hole h_t: on plate1, aligned with h_c on axis vertical, offset from h_c by 20 mm on side above, diameter 8 mm
+```
+
+The solver computes it exactly, in millimetres, the same to the last byte every
+time:
+
+```
+# linework placement 1 -- millimetres, x right, y up, from origin
+# name kind xmin ymin xmax ymax
+plate1 plate 0 0 200 120
+h_c hole 95 55 105 65
+h_r hole 135 56.75 141.5 63.25
+h_t hole 96 85 104 93
+```
+
+When a place is not decided, the script is refused instead of guessed:
+
+```linework-unplaced
+linework script 1
+domain architecture
+add room living: at origin, width 5 m, length 4 m
+add room kitchen: width 3 m, length 4 m
+# unplaced: line 4: "kitchen" has no place: say where it goes relative to something that exists (the first object goes at origin)
+```
+
+```linework-unplaced
+linework script 1
+domain architecture
+add room living: at origin, width 5 m, length 4 m
+add column c1: inside living, aligned with living on axis vertical, diameter 30 cm
+# unplaced: line 4: the up-down place of "c1" is not determined; add a relation that fixes it, such as centred on, aligned with ... on axis horizontal, or offset from ... on side below
+```
+
+```linework-unplaced
+linework script 1
+domain mechanical
+add plate p1: at origin, width 200 mm, height 120 mm
+add hole h1: on p1, centred on p1, offset from p1 by 10 mm on side right, diameter 8 mm
+# unplaced: line 4: the left-right place of "h1" is fixed twice, by "centred on p1" and by "offset from p1 by 10 mm on side right"; keep one
+```
+
+```linework-unplaced
+linework script 1
+domain mechanical
+add plate p1: at origin, width 100 mm, height 100 mm
+add hole holes: on p1, distributed over p1 in 4 copies, offset from p1 by 10 mm on side above, diameter 8 mm
+# unplaced: line 4: "distributed over p1 in 4 copies" needs the direction of "p1", which is not known: it is square, or its size is not given in the script
+```
+
+```linework-unplaced
+linework script 1
+domain architecture
+add room living: at origin, width 5 m, length 4 m
+add wall w_n: along living on side above
+add window w1: on w_n, centred on w_n, width 120 cm
+remove wall w_n
+# unplaced: line 6: removing "w_n" leaves "w1" (line 5) without the object it is placed by; place it relative to something else first
+```
 
 ## Worked examples
 
@@ -116,8 +222,8 @@ domain mechanical
 # The plate the user sized; everything else is placed on it.
 add plate plate1: at origin, width 200 mm, height 120 mm, thickness 10 mm
 add threaded_hole hole_centre: on plate1, centred on plate1, thread M8, hole_type through
-add hole holes_top: on plate1, distributed over plate1 in 4 copies, offset from plate1 by 15 mm on side inside, diameter 6.5 mm  # four fixing holes along the top
-add slot adjust: on plate1, aligned with hole_centre on axis vertical, length 40 mm, width 8.5 mm
+add hole holes_top: on plate1, distributed over plate1 in 4 copies, offset from hole_centre by 40 mm on side above, diameter 6.5 mm  # four fixing holes along the top
+add slot adjust: on plate1, aligned with hole_centre on axis vertical, offset from hole_centre by 20 mm on side below, length 40 mm, width 8.5 mm
 add fillet corners: on plate1, radius 5 mm, corner all
 add chamfer cut: on plate1, length 3 mm, corner top_left
 ```
@@ -134,7 +240,7 @@ add wall wall_north: along living on side above, thickness 30 cm
 add wall wall_east: between living and kitchen
 add window w1: on wall_north, centred on wall_north, width 120 cm  # sill and height from the standard
 add door d1: on wall_east, centred on wall_east, width 90 cm, hinge_side left, swing inward
-add column c1: inside living, aligned with w1 on axis vertical, diameter 30 cm
+add column c1: inside living, aligned with w1 on axis vertical, offset from wall_north by 50 cm on side below, diameter 30 cm
 
 # The user asked for a wider window, then for no door between the rooms.
 change window w1: width 150 cm
@@ -169,7 +275,7 @@ add lamp l1: offset from r1 by 20 mm on side right, aligned with r1 on axis hori
 add wire n1: between t_plus and s1
 add wire n2: between s1 and r1
 add wire n3: between r1 and l1
-add junction j1: on n2
+add junction j1: on n2, centred on n2
 ```
 
 ### Several trades in one script
@@ -243,7 +349,7 @@ option entrance street: add door d1: on wall_south, centred on wall_south, width
 option entrance garden: add door d1: on wall_east, centred on wall_east, width 90 cm  # opens on the garden
 option entrance garden: add window w_garden: on wall_south, centred on wall_south, width 120 cm  # light where the door is not
 
-add column c1: inside living, aligned with w_garden on axis vertical, diameter 30 cm
+add column c1: inside living, aligned with w_garden on axis vertical, offset from wall_south by 50 cm on side above, diameter 30 cm
 ```
 
 Now the drawing follows `garden`, and `w_garden` exists for the lines after it.

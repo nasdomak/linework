@@ -485,9 +485,7 @@
                 "enum": [
                   "above",
                   "below",
-                  "inside",
                   "left",
-                  "outside",
                   "right"
                 ]
               },
@@ -652,9 +650,7 @@
                 "enum": [
                   "above",
                   "below",
-                  "inside",
                   "left",
-                  "outside",
                   "right"
                 ]
               },
@@ -712,9 +708,7 @@
                 "enum": [
                   "above",
                   "below",
-                  "inside",
                   "left",
-                  "outside",
                   "right"
                 ]
               },

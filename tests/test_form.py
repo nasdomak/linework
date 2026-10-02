@@ -274,7 +274,7 @@ def test_refusal_wording():
          'object.name: "Window 1" is not a usable name: use lower-case letters, digits and '
          "underscores, starting with a letter, at most 40 characters"),
         (lambda f: f["object"].update(name="origin"),
-         'object.name: "origin" is reserved (the origin of the drawing) and cannot be the '
+         'object.name: "origin" is a reserved name: it always exists, and cannot be the '
          "name of an object"),
         (lambda f: f["object"].update(name="w9"),
          'object.name: "w9" already exists (a window); adding needs a new name, or use the '
@@ -328,7 +328,7 @@ def test_refusal_wording():
         (lambda f: f["relations"].append({"relation": "next_to", "to": ["wall_east"],
                                           "side": "north"}),
          'relations[2].side: "north" is not a known value of side. Known values of side: '
-         "above, below, inside, left, outside, right"),
+         "above, below, left, right"),
         (lambda f: f["relations"].append({"relation": "between",
                                           "to": ["wall_east", "wall_east"]}),
          'relations[2].to[1]: "wall_east" is named twice; "between" needs 2 different '
