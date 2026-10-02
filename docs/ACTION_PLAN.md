@@ -89,6 +89,8 @@ Turn relations into exact coordinates. Pure Python, no CAD dependency, massively
 - Guaranteed closure of contours; recognition of closed contours from loose segments.
 - Distributions: along a segment, on a circle, on a grid, by count or pitch.
 - Notable points for automatic dimension attachment.
+- Edges and corners as targets: 'offset from plate1 top by 15 mm' (D-003).
+- Placing by relations: along, between, distributed over, corner features, all exact (D-002).
 - Tolerances: a contour closes **exactly**, not "almost".
 
 **Finished when.** Hundreds of tests green, covering degenerate cases (parallel, tangent,
@@ -380,6 +382,7 @@ Generated from `state/backlog.json`. Status is not shown here: run `python tools
 - `P2-T02` Offsets, trim, extend, fillet, chamfer, tangents — after `P2-T01`
 - `P2-T03` Contour closure, exactly — after `P2-T01`
 - `P2-T04` Distributions and notable points — after `P2-T01`
+- `P2-T05` Place by relations: every relation computed exactly — after `P2-T04`
 
 ### Phase 3 — The drawing: DXF in and out
 

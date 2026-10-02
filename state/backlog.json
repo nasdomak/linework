@@ -377,13 +377,33 @@
       ],
       "definition_of_done": [
         "distribution along a segment, on a circle, on a grid, by count and by pitch",
-        "notable points exposed for automatic dimension attachment"
+        "notable points exposed for automatic dimension attachment",
+        "a target can name an edge or a corner of an object ('plate1 top', 'plate1 top_left'), so 'offset from plate1 top by 15 mm on side below' is exact (D-003)"
       ],
-      "verification": "tests/test_distributions.py asserts counts, pitches and endpoint behaviour on hand-computed cases",
+      "verification": "tests/test_distributions.py asserts counts, pitches and endpoint behaviour on hand-computed cases, and that offsets measured from a named edge or corner land on hand-computed coordinates",
       "size": "M",
       "status": "todo",
       "blocked_reason": "",
-      "decision": ""
+      "decision": "D-003"
+    },
+    {
+      "id": "P2-T05",
+      "phase": 2,
+      "title": "Place by relations: every relation computed exactly",
+      "why": "P1-T04 decided which relation fixes each direction of every object and computed at, centred on, next to, offset from and aligned with. Along, between, distributed over and the corner features need real geometry; without this task nothing in the plan would ever compute them, and the solver door would stay half built (D-002).",
+      "depends_on": [
+        "P2-T04"
+      ],
+      "definition_of_done": [
+        "geometry/placement.py places along, between and distributed over exactly, in fractions of a millimetre",
+        "corner features (fillet, chamfer on a named corner) placed from the corner the script names",
+        "no relation in the catalogue that fixes a position is left raising NotPlacedYet"
+      ],
+      "verification": "tests/test_place_relations.py: at least one hand-computed case per relation, plus the refusals",
+      "size": "M",
+      "status": "todo",
+      "blocked_reason": "",
+      "decision": "D-002"
     },
     {
       "id": "P3-T01",
