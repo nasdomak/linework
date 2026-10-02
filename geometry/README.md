@@ -14,8 +14,9 @@ the root `README.md`, "Repository layout".
 
 ## What is here
 
-- `placement.py` -- exact positions from anchoring decisions (ADR 0008): at,
-  centred on, next to, offset from, aligned with, and the inside check, in
+- `placement.py` -- exact positions from anchoring decisions (ADR 0008, ADR
+  0014): at, centred on, next to, offset from, aligned with, along, between,
+  distributed over, corner features, and the inside and on checks, in
   fractions of a millimetre, with one canonical text per drawing. Works on plain
   records; imports nothing from `lang/`.
 - `exact.py` -- exact real numbers (ADR 0010): Fractions and real algebraic

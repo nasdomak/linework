@@ -18,6 +18,7 @@ the old one, never by editing it quietly.
 | [0011](0011-drafting-operations.md) | Drafting operations: exact, and refused when ambiguous | accepted, 2026-10-02 |
 | [0012](0012-contours-close-exactly.md) | Contours close exactly, or are reported open | accepted, 2026-10-02 |
 | [0013](0013-distributions-notable-points-edges.md) | Distributions, notable points, and edges as targets | accepted, 2026-10-02 |
+| [0014](0014-place-by-relations.md) | Every relation computed exactly | accepted, 2026-10-02 |
 
 Each ADR states its status, date, context, decision, consequences, and how it is
 verified. `tests/test_repo_shape.py` checks the ones the plan depends on.

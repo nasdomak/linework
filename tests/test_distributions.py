@@ -198,13 +198,21 @@ def test_offset_from_a_named_edge_lands_exactly():
 
 
 def test_corners_and_centred_on_an_edge():
-    got = placed("add hole h3: on plate1, at plate1 top_right, diameter 10 mm\n")
-    assert got["h3"] == ["195", "115", "205", "125"]
-    got = placed("add hole h4: on plate1, centred on plate1 top, diameter 10 mm\n")
-    assert got["h4"] == ["95", "115", "105", "125"]
-    got = placed("add hole h5: on plate1, aligned with plate1 bottom_left on axis horizontal, "
-                 "offset from plate1 left by 30 mm on side right, diameter 4 mm\n")
-    assert got["h5"] == ["30", "-2", "34", "2"]
+    # circles (not holes, which must stay on the plate) centred on a corner or an edge
+    got = placed("domain general\nadd circle c3: at plate1 top_right, diameter 10 mm\n")
+    assert got["c3"] == ["195", "115", "205", "125"]
+    got = placed("domain general\nadd circle c4: centred on plate1 top, diameter 10 mm\n")
+    assert got["c4"] == ["95", "115", "105", "125"]
+    got = placed("domain general\nadd circle c5: aligned with plate1 bottom_left on axis "
+                 "horizontal, offset from plate1 left by 30 mm on side right, diameter 4 mm\n")
+    assert got["c5"] == ["30", "-2", "34", "2"]
+    # a hole there would hang off its plate, and "on" refuses it
+    try:
+        placed("add hole h3: on plate1, at plate1 top_right, diameter 10 mm\n")
+    except PL.PlacementError as exc:
+        assert 'it is not on "plate1"' in str(exc)
+    else:
+        raise AssertionError("a hole off its plate was placed")
 
 
 def test_edge_targets_round_trip_and_reach_the_form():

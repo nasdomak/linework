@@ -120,7 +120,7 @@ domain mechanical
 
 add plate plate1: at origin, width 200 mm, height 120 mm
 add hole h1: on plate1, offset from plate1 top by 15 mm on side below, offset from plate1 left by 20 mm on side right, diameter 10 mm
-add hole h2: on plate1, centred on plate1 top_right, diameter 6 mm
+add hole h2: on plate1, offset from plate1 bottom by 12.5 mm on side above, offset from plate1 right by 8 mm on side left, diameter 6 mm
 ```
 
 `h1` sits 15 mm under the top edge and 20 mm in from the left edge: its
@@ -244,7 +244,7 @@ domain mechanical
 add plate plate1: at origin, width 200 mm, height 120 mm, thickness 10 mm
 add threaded_hole hole_centre: on plate1, centred on plate1, thread M8, hole_type through
 add hole holes_top: on plate1, distributed over plate1 in 4 copies, offset from hole_centre by 40 mm on side above, diameter 6.5 mm  # four fixing holes along the top
-add slot adjust: on plate1, aligned with hole_centre on axis vertical, offset from hole_centre by 20 mm on side below, length 40 mm, width 8.5 mm
+add slot adjust: on plate1, aligned with hole_centre on axis vertical, offset from hole_centre by 10 mm on side below, length 40 mm, width 8.5 mm
 add fillet corners: on plate1, radius 5 mm, corner all
 add chamfer cut: on plate1, length 3 mm, corner top_left
 ```

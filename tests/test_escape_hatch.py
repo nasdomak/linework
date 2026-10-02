@@ -174,12 +174,14 @@ def test_free_content_is_always_flagged_whatever_the_script():
                 free_names.append(name)
             else:
                 name = "h%d" % i
-                lines.append("add hole %s: on plate1, offset from %s by %d mm on side %s, "
+                # circles, not holes: a hole must stay on its plate, and these
+                # are placed anywhere around it
+                lines.append("add circle %s: offset from %s by %d mm on side %s, "
                              "diameter 4 mm\n" % (name, rng.choice(checked), rng.randint(1, 9),
                                                   rng.choice(["left", "right", "above",
                                                               "below"])))
                 checked.append(name)
-        script = S.parse(H + PLATE + "".join(lines))
+        script = S.parse(H + PLATE + "domain general\n" + "".join(lines))
         assert S.check(script) == []
         report = E.report(script)
         out = A.place(script)

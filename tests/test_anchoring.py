@@ -98,17 +98,18 @@ def test_inside_is_checked_not_assumed():
         raise AssertionError("a column outside its room was placed")
 
 
-def test_what_this_phase_cannot_compute_is_refused_not_guessed():
-    text = (H + "domain civil\nadd plot plot1: at origin, width 30 m, length 45 m\n"
-            "add road road1: along plot1 on side below, width 6 m\n")
+def test_a_size_the_script_does_not_give_is_refused_not_guessed():
+    # P2-T05 computes along; the wall's thickness comes from the standard (phase 4)
+    text = (H + "domain architecture\nadd room living: at origin, width 5 m, length 4 m\n"
+            "add wall w_n: along living on side above\n")
     assert first_problem(text) is None          # the place is determined...
     try:
-        A.place(S.parse(text))                  # ...the number is the phase-2 solver's
-    except P.NotPlacedYet as exc:
-        assert str(exc) == '"road1": its size is not known here, so it is placed by the ' \
-                           "solver of phase 2"
+        A.place(S.parse(text))                  # ...the thickness is not in the script
+    except P.SizeNotKnown as exc:
+        assert str(exc) == ('"w_n": its thickness comes from the drawing standard in memory '
+                            "(phase 4), and the script does not give it")
     else:
-        raise AssertionError("along was placed without a solver")
+        raise AssertionError("a wall was drawn with an invented thickness")
 
 
 # ----------------------------------------------------- ambiguity is refused

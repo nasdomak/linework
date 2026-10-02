@@ -1,7 +1,28 @@
 {
   "schema": 1,
   "note": "The decision queue. The loop never blocks on a question: it queues it here with a proposed default and a rationale, carries on with everything the question does not block, and on the next run takes the default if Marco has not answered - recording it as a reversible decision and flagging it in the report. Anything irreversible has reversible=false and waits, however long it takes.",
-  "open": [],
+  "open": [
+    {
+      "id": "D-004",
+      "raised": "2026-10-02",
+      "question": "How are 'N copies distributed over X' spaced? Example: 4 holes of 6.5 mm over a 200 mm plate.",
+      "context": "Found doing P2-T05. Reversible: changing the rule changes positions, never correctness; the default is applied now and flagged.",
+      "proposed_default": "Centres equally spaced with equal gaps at the ends too: N copies, N+1 equal centre-to-centre spaces (40, 80, 120, 160 mm for the example). Copies that would overlap are refused.",
+      "rationale": "It gives the round numbers a draughtsman expects for hole patterns and keeps every copy inside the target. The alternative, equal edge-to-edge gaps (the catalogue's general meaning of distance), gives 38.05, 79.35, 120.65, 161.95 mm here, but lets copies that exactly fill the length touch (parking bays). Either is computed exactly; a pitch-based form can be added to the script later for rows that must touch.",
+      "reversible": true,
+      "blocks": []
+    },
+    {
+      "id": "D-005",
+      "raised": "2026-10-02",
+      "question": "What does 'between A and B' mean when A and B are rectangles, e.g. 'wall_east: between living and kitchen'?",
+      "context": "Found doing P2-T05 on the architecture example of SCRIPT.md. Reversible.",
+      "proposed_default": "When both targets are rectangles that touch along an edge, the object lies on that shared edge (a wall straddles it, centred). Two rectangles that share no edge are refused with the reason. Between round things, symbols and points it stays reference point to reference point (centres), as the catalogue says.",
+      "rationale": "The catalogue's frame said 'the two targets' reference points', which for two rooms means their two lower-left corners: a wall along the floor of the living room, not between the rooms. The relation's own meaning ('a wall between two rooms') asks for the shared edge, so the frame is corrected to match it. Refusing non-touching rectangles avoids inventing which edges are meant.",
+      "reversible": true,
+      "blocks": []
+    }
+  ],
   "settled": [
     {
       "id": "D-000",

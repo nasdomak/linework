@@ -234,24 +234,66 @@ def _rel_record(clause):
     return rec
 
 
+# Straight things: their reference point is the start of their axis, and the
+# dimension that gives their width across it (none: a wire or a line is drawn
+# with no width).
+STRIP_KINDS = {"wall": "thickness", "road": "width", "pipe": "diameter", "wire": None,
+               "line": None}
+
+
+def _size_from(obj, cat, wanted=None):
+    """Why the size is not known, in words: which dimensions the drawing standard
+    in memory will give (phase 4), or that the script does not give them."""
+    dims = cat["objects"].get(obj.kind, {}).get("dimensions", {})
+    memory = [q for q, need in sorted(dims.items()) if need == "memory" and q not in obj.dims
+              and (wanted is None or q in wanted)]
+    if memory:
+        return ("its %s %s from the drawing standard in memory (phase 4), and the script "
+                "does not give %s" % (" and ".join(memory),
+                                      "come" if len(memory) > 1 else "comes",
+                                      "them" if len(memory) > 1 else "it"))
+    if not dims:
+        return ("its size comes from the drawing standard of its trade in memory (phase 4): "
+                "a %s has no dimension in the script" % obj.kind.replace("_", " "))
+    return "its size is not in the script: give %s" % " and ".join(sorted(dims))
+
+
+def _record(name, obj, axes, cat):
+    rec = {"name": name, "kind": obj.kind,
+           "axes": {} if axes == "corner" else dict((a, _rel_record(c)) for a, c in axes.items()),
+           "inside": [_form.split_target(r.targets[0])[0] for r in obj.relations
+                      if r.word == "inside"],
+           "on": [_form.split_target(r.targets[0])[0] for r in obj.relations
+                  if r.word == "on"]}
+    if axes == "corner":
+        host = [r.targets[0] for r in obj.relations if r.word == "on"][0]
+        size = obj.mm("radius") if obj.mm("radius") is not None else obj.mm("length")
+        rec.update(shape="corner", host=host, corner=obj.props["corner"], corner_size=size)
+        return rec
+    words = set(c.word for c in axes.values())
+    if obj.kind in STRIP_KINDS and words & {"along", "between"}:
+        dim = STRIP_KINDS[obj.kind]
+        across = Fraction(0) if dim is None else obj.mm(dim)
+        rec.update(shape="strip", across=across, length=obj.mm("length"),
+                   size_from=None if across is not None else _size_from(obj, cat, [dim]))
+        return rec
+    shape, size = obj.shape_and_size()
+    rec.update(shape=shape, size=size, size_from=None if shape else _size_from(obj, cat))
+    return rec
+
+
 def place(script, catalogue=None):
     """One determinate drawing: the canonical placement text of the script.
-    Raises AnchoringError, or geometry.placement.NotPlacedYet for a relation the
-    phase-2 solver will compute."""
+    Raises AnchoringError, geometry.placement.PlacementError when the relations
+    cannot all hold, or geometry.placement.SizeNotKnown when a size is not in
+    the script (it will come from the drawing standard in memory)."""
     cat = catalogue or _form.default_catalogue()
     plan = analyse(script, cat)
     objects, _, _ = _state(script)
     records = []
     free = dict((f.name, f.source) for f in script.free())
     for name, axes in plan:
-        obj = objects[name]
-        if axes == "corner":
-            raise _placement.NotPlacedYet(name, "corner features are placed by the solver of "
-                                          "phase 2")
-        shape, size = obj.shape_and_size()
-        records.append({"name": name, "kind": obj.kind, "shape": shape, "size": size,
-                        "axes": dict((a, _rel_record(c)) for a, c in axes.items()),
-                        "inside": [r.targets[0] for r in obj.relations
-                                   if r.word == "inside"],
-                        "free": free.get(name)})
+        rec = _record(name, objects[name], axes, cat)
+        rec["free"] = free.get(name)
+        records.append(rec)
     return _placement.text(records, _placement.place(records))

@@ -382,7 +382,7 @@
       ],
       "verification": "tests/test_distributions.py asserts counts, pitches and endpoint behaviour on hand-computed cases, and that offsets measured from a named edge or corner land on hand-computed coordinates",
       "size": "M",
-      "status": "doing",
+      "status": "done",
       "blocked_reason": "",
       "decision": "D-003"
     },
@@ -401,7 +401,7 @@
       ],
       "verification": "tests/test_place_relations.py: at least one hand-computed case per relation, plus the refusals",
       "size": "M",
-      "status": "todo",
+      "status": "doing",
       "blocked_reason": "",
       "decision": "D-002"
     },
