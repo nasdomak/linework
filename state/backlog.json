@@ -306,7 +306,7 @@
       ],
       "verification": "tests/test_escape_hatch.py asserts free-channel content is always flagged and never silently mixed with validated geometry",
       "size": "M",
-      "status": "doing",
+      "status": "done",
       "blocked_reason": "",
       "decision": ""
     },

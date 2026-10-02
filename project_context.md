@@ -37,8 +37,9 @@ Completeness is the north star. Name **`linework`** (Marco, 17/09/2026).
 
 ## Current status (02/10/2026, run 2)
 
-**Phase 1 (the language) open: Marco said "vai" on 30/09. P1-T01..T04 done;
-P1-T05 (the escape hatch) is the last task before the gate to phase 2.**
+**Phase 1 (the language) complete, 5 of 5 tasks. The loop is stopped at the
+gate to phase 2 (the geometry solver), waiting for "vai".** Report:
+`reports/2026-10-02-run002.md`.
 
 ### Measured in run 2 (01-02/10/2026)
 
@@ -81,6 +82,13 @@ P1-T05 (the escape hatch) is the last task before the gate to phase 2.**
   examples found and fixed. `tests/test_anchoring.py`, 16 tests, hand-computed
   values. **CI green, commit `d4b3378`: 125 passed, 0 failed, 0 skipped on
   each of the six test jobs.**
+- **P1-T05 done -- the escape hatch** (ADR 0009). `free <name>: source
+  user|model|import, <placing relations>, unit, shape "line/circle/arc ..."  #
+  why`. Free is the shape, never the place; checked geometry is never placed by
+  free geometry; output keeps a separate FREE section; `lang/escape.py` lists
+  it for review. `tests/test_escape_hatch.py`, 10 tests. **CI green, commit
+  `cafc690`: 135 passed, 0 failed, 0 skipped on each of the six test jobs.**
+  CI pictures unchanged (P3-T04 render defects still open).
 - **Open decisions for Marco: D-002** (who computes along / between /
   distributed: default, a new task P2-T05) and **D-003** (measuring from a
   named edge: default, edge targets in phase 2 with P2-T04). Defaults apply
@@ -170,15 +178,16 @@ P1-T05 (the escape hatch) is the last task before the gate to phase 2.**
 
 ## Last action
 
-02/10/2026, run 2: P1-T01..T04 done, verified, CI green. Two decisions
-queued (D-002, D-003).
+02/10/2026, run 2: phase 1 complete (P1-T01..T05), verified, CI green; report
+written; stopped at the gate to phase 2. D-002 and D-003 queued.
 
 ---
 
 ## Next steps
 
-1. P1-T05 (the escape hatch). Then the loop stops at the gate to phase 2.
-2. Next run: `take-defaults` applies D-002 and D-003 if Marco has not
-   answered -- D-002 adds task P2-T05 to the backlog and the plan.
-3. Open the upstream conversation with LibreCAD about `addDimension` /
+1. Marco looks at phase 1 and says "vai" for phase 2 (the geometry solver).
+   `loop.py go` opens the gate; `take-defaults` then applies D-002 (new task
+   P2-T05, place by relations) and D-003 (edge targets with P2-T04) if he has
+   not answered. Then P2-T01 (primitives and exact intersections).
+2. Open the upstream conversation with LibreCAD about `addDimension` /
    `addHatch` when convenient: long lead time, nothing depends on it.
