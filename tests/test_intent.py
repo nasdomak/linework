@@ -162,4 +162,5 @@ def test_a_script_without_choices_draws_its_statements_unchanged():
     for kind, _, text in S.spec_blocks():
         if kind == "linework" and "choice" not in text:
             script = S.parse(text)
-            assert script.drawable() == script.statements()
+            assert script.drawable() == [i for i in script.items
+                                         if isinstance(i, (S.Statement, S.Free))]

@@ -65,7 +65,10 @@ class _Object(object):
         return _placement.to_mm(*v) if v and v[1] in _placement.UNIT_MM else None
 
     def shape_and_size(self):
-        """("box"|"round", {"x": mm, "y": mm}) when the script gives the size."""
+        """("box"|"round", {"x": mm, "y": mm}) when the script gives the size. A
+        free shape is placed by its local origin, as a point (ADR 0009)."""
+        if self.kind == "free":
+            return "point", {"x": Fraction(0), "y": Fraction(0)}
         d = self.mm("diameter")
         if d is None and self.mm("radius") is not None:
             d = 2 * self.mm("radius")
@@ -140,7 +143,7 @@ def _axes_of(obj, rel, key, objects):
 
 def _plan_one(obj, objects, cat):
     """{"x": clause, "y": clause} or "corner"; raises AnchoringError."""
-    entry = cat["objects"][obj.kind]
+    entry = cat["objects"].get(obj.kind, {})        # "free" is not a catalogue kind
     if entry.get("placed_by") == "corner":
         return "corner"
     firm, default = {"x": [], "y": []}, {"x": [], "y": []}
@@ -234,6 +237,7 @@ def place(script, catalogue=None):
     plan = analyse(script, cat)
     objects, _, _ = _state(script)
     records = []
+    free = dict((f.name, f.source) for f in script.free())
     for name, axes in plan:
         obj = objects[name]
         if axes == "corner":
@@ -243,5 +247,6 @@ def place(script, catalogue=None):
         records.append({"name": name, "kind": obj.kind, "shape": shape, "size": size,
                         "axes": dict((a, _rel_record(c)) for a, c in axes.items()),
                         "inside": [r.targets[0] for r in obj.relations
-                                   if r.word == "inside"]})
+                                   if r.word == "inside"],
+                        "free": free.get(name)})
     return _placement.text(records, _placement.place(records))

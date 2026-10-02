@@ -357,6 +357,110 @@ The `street` alternative stays in the script: it is the record of what was
 considered and turned down, and why -- the raw material of the judgement memory
 (ADR 0002, phase 10).
 
+## The free channel: what the language cannot say
+
+Some shapes have no word in the catalogue -- the profile of a cam, a logo, the
+outline of a hand sketch. For those there is one door out, and it is built so
+that you always know when it was used. A `free` line carries a **shape**; its
+**place** is still decided by the same checked relations as everything else.
+
+```linework
+linework script 1
+domain mechanical
+
+add plate plate1: at origin, width 200 mm, height 120 mm
+add hole h1: on plate1, centred on plate1, diameter 8 mm
+free cam: source user, centred on plate1, unit mm, shape "line 0 0 to 40 0; arc 0 0 radius 40 from 0 to 90; line 0 40 to 0 0"  # the user's cam profile: the catalogue has no word for it
+free mark: source model, next to plate1 on side right, unit mm, shape "circle 0 0 radius 5"  # a datum mark the model proposed; there is no catalogue word for marks yet
+```
+
+The boundary of the free channel, all of it:
+
+1. **Free is the shape, never the place.** A free object is placed by its local
+   origin `0 0`, with `at`, `centred on`, `next to`, `offset from`,
+   `aligned with` or `inside` -- checked and anchored like any object.
+2. **It says where it came from**: `source user` (the user drew or dictated it),
+   `source model` (the model proposed it), or `source import` (it came from a
+   file the user named).
+3. **It says why**: the `#` reason is required -- what the language could not
+   say. A free line without one is refused.
+4. **Its shape is plain**: parts separated by `;`, each `line X Y to X Y`,
+   `circle X Y radius R`, or `arc X Y radius R from A to A` (degrees,
+   counter-clockwise), in the `unit` given, at most 100 parts. The free channel
+   is for what the language cannot say, not a second way to draw.
+5. **Checked geometry never leans on free geometry.** A free object may be
+   placed by checked objects; a checked object may never be placed by a free
+   one, because its numbers would then come through the hole.
+6. **It is never mixed with checked geometry on the way out.** In the computed
+   drawing it sits in its own section, marked FREE with its source; on the DXF
+   it goes on its own layer (phase 3); and `python3 -m lang.escape <script>`
+   lists every free object on its own, for review:
+
+```
+# linework free channel -- 2 of 4 objects did not pass the gate; review each
+
+cam  line 6  source user  3 parts  unit mm  placed: centred on plate1
+  why: the user's cam profile: the catalogue has no word for it
+  line 0 0 to 40 0
+  arc 0 0 radius 40 from 0 to 90
+  line 0 40 to 0 0
+
+mark  line 7  source model  1 part  unit mm  placed: next to plate1 on side right
+  why: a datum mark the model proposed; there is no catalogue word for marks yet
+  circle 0 0 radius 5
+```
+
+A checked object placed by a free one:
+
+```linework-refused
+linework script 1
+domain mechanical
+add plate plate1: at origin, width 200 mm, height 120 mm
+free cam: source user, centred on plate1, unit mm, shape "circle 0 0 radius 30"  # the user's cam
+add hole h1: on plate1, centred on cam, diameter 8 mm
+# refused: line 5: in "centred on cam": "cam" is free geometry, and checked geometry is never placed by it -- free may lean on checked, never the reverse
+```
+
+A free shape that does not say why:
+
+```linework-refused
+linework script 1
+domain mechanical
+add plate plate1: at origin, width 200 mm, height 120 mm
+free cam: source user, centred on plate1, unit mm, shape "circle 0 0 radius 30"
+# refused: line 4, column 80: a free object must say why the language could not say it: end the line with # and the reason
+```
+
+A free shape that does not say where it came from:
+
+```linework-refused
+linework script 1
+domain mechanical
+add plate plate1: at origin, width 200 mm, height 120 mm
+free cam: centred on plate1, unit mm, shape "circle 0 0 radius 30"  # the user's cam
+# refused: line 4, column 9: a free object must give its source
+```
+
+A free shape that tries to be a catalogue object:
+
+```linework-refused
+linework script 1
+domain mechanical
+add plate plate1: at origin, width 200 mm, height 120 mm
+free cam: source model, on plate1, unit mm, shape "circle 0 0 radius 30"  # a cam
+# refused: line 4, column 25: a free object is placed with at, centred on, next to, offset from, aligned with, inside; "on" would make it part of checked geometry
+```
+
+A part the free shape does not know:
+
+```linework-refused
+linework script 1
+domain mechanical
+add plate plate1: at origin, width 200 mm, height 120 mm
+free cam: source user, centred on plate1, unit mm, shape "spline 0 0 10 10 20 0"  # a curve
+# refused: line 4, column 58: in the shape, part 1 "spline 0 0 10 10 20 0": a part is "line X Y to X Y", "circle X Y radius R" or "arc X Y radius R from A to A" (degrees, counter-clockwise)
+```
+
 ## When a script is refused
 
 A script is checked from top to bottom against the drawing it builds as it

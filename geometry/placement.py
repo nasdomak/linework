@@ -93,7 +93,7 @@ def place(objects):
     parameters with distances already in mm}. Returns {name: Extent}."""
     placed = {"origin": ORIGIN}
     for obj in objects:
-        if obj.get("shape") not in ("box", "round"):
+        if obj.get("shape") not in ("box", "round", "point"):
             raise NotPlacedYet(obj["name"], "its size is not known here, so it is placed by "
                                "the solver of phase 2")
         lo, hi = {}, {}
@@ -135,11 +135,25 @@ def fmt(q):
 
 
 def text(objects, placed):
-    """The canonical text of a placement: one line per object, in order, mm."""
+    """The canonical text of a placement: one line per object, in order, mm.
+
+    Objects that came through the free channel (ADR 0009) are never mixed with
+    checked ones: they follow in their own section, each marked FREE with its
+    source, and for them only the local origin is placed."""
     lines = ["# linework placement 1 -- millimetres, x right, y up, from origin",
              "# name kind xmin ymin xmax ymax"]
+    free = [o for o in objects if o.get("free")]
     for obj in objects:
+        if obj.get("free"):
+            continue
         e = placed[obj["name"]]
         lines.append("%s %s %s %s %s %s" % (obj["name"], obj["kind"], fmt(e.lo["x"]),
                                             fmt(e.lo["y"]), fmt(e.hi["x"]), fmt(e.hi["y"])))
+    if free:
+        lines.append("# FREE CHANNEL -- not checked by the language; review separately")
+        lines.append("# name FREE source origin_x origin_y")
+        for obj in free:
+            e = placed[obj["name"]]
+            lines.append("%s FREE %s %s %s" % (obj["name"], obj["free"], fmt(e.lo["x"]),
+                                               fmt(e.lo["y"])))
     return "\n".join(lines) + "\n"

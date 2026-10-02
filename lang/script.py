@@ -219,6 +219,82 @@ class Option(object):
         return "option %s %s: %s" % (self.choice, self.label, self.statement)
 
 
+# ------------------------------------------------- the free channel (P1-T05)
+
+FREE_SOURCES = ("user", "model", "import")
+FREE_RELATIONS = ("at", "centred_on", "next_to", "offset_from", "aligned_with", "inside")
+FREE_MAX_PARTS = 100
+_FREE_PART_RE = {
+    "line": re.compile(r"^line (\S+) (\S+) to (\S+) (\S+)$"),
+    "circle": re.compile(r"^circle (\S+) (\S+) radius (\S+)$"),
+    "arc": re.compile(r"^arc (\S+) (\S+) radius (\S+) from (\S+) to (\S+)$"),
+}
+FREE_PART_FORMS = ('"line X Y to X Y", "circle X Y radius R" or "arc X Y radius R from A to '
+                   'A" (degrees, counter-clockwise)')
+
+
+class Free(object):
+    """Geometry the language cannot say (ADR 0009). Its SHAPE is free; its place
+    is not: it is placed by the same checked relations as everything else, by its
+    local origin (0 0). It states where it came from and why, it is drawn on its
+    own layer, and checked geometry may never be placed by it.
+
+    free cam: source user, at origin, unit mm, shape "line 0 0 to 120 0; ..."  # why
+    """
+
+    act, kind = "add", "free"
+
+    def __init__(self, name, parts, line=0):
+        self.name, self.parts, self.line = name, list(parts), line
+        self.reason, self.domain = None, None
+
+    def _get(self, key):
+        for k, v in self.parts:
+            if k == key:
+                return v
+        return None
+
+    @property
+    def source(self):
+        return self._get("source")
+
+    @property
+    def unit(self):
+        return self._get("unit")
+
+    @property
+    def shape(self):
+        """[(primitive, numbers...)] in local coordinates, in `unit`."""
+        return self._get("shape")
+
+    @property
+    def clauses(self):
+        return [v for k, v in self.parts if k == "relation"]
+
+    def shape_text(self):
+        out = []
+        for prim in self.shape:
+            n = [fmt_number(x) for x in prim[1:]]
+            if prim[0] == "line":
+                out.append("line %s %s to %s %s" % tuple(n))
+            elif prim[0] == "circle":
+                out.append("circle %s %s radius %s" % tuple(n))
+            else:
+                out.append("arc %s %s radius %s from %s to %s" % tuple(n))
+        return "; ".join(out)
+
+    def __str__(self):
+        pieces = []
+        for k, v in self.parts:
+            if k == "relation":
+                pieces.append(str(v))
+            elif k == "shape":
+                pieces.append("shape " + quote(self.shape_text()))
+            else:
+                pieces.append("%s %s" % (k, v))
+        return "free %s: %s  # %s" % (self.name, ", ".join(pieces), self.reason)
+
+
 class OpenChoiceError(ScriptError):
     """Raised when a script with an open choice is asked for geometry."""
 
@@ -230,6 +306,10 @@ class Script(object):
     def statements(self):
         """The statements outside any choice."""
         return [i for i in self.items if isinstance(i, Statement)]
+
+    def free(self):
+        """Every object that came through the free channel (ADR 0009)."""
+        return [i for i in self.items if isinstance(i, Free)]
 
     def choices(self):
         return [i for i in self.items if isinstance(i, Choice)]
@@ -254,7 +334,7 @@ class Script(object):
             raise OpenChoiceError(open_[0].line, msg)
         out = []
         for item in self.items:
-            if isinstance(item, Statement):
+            if isinstance(item, (Statement, Free)):
                 out.append(item)
             elif isinstance(item, Choice):
                 out.extend(item.option_statements(item.decided))
@@ -585,6 +665,97 @@ def _option(L, code, domain, reason, cat):
     return Option(choice, label, _statement(L, code, start, domain, reason, cat), L.n)
 
 
+def _free_shape(L, col, text):
+    parts = [p.strip() for p in text.split(";")]
+    if len(parts) > FREE_MAX_PARTS:
+        L.fail("a free shape holds at most %d parts, not %d: the free channel is for what "
+               "the language cannot say, not a second way to draw" % (FREE_MAX_PARTS,
+                                                                       len(parts)), col)
+    out = []
+    for i, part in enumerate(parts, start=1):
+        part = " ".join(part.split())
+        m = None
+        for prim, rx in _FREE_PART_RE.items():
+            m = rx.match(part)
+            if m:
+                break
+        if not m:
+            L.fail('in the shape, part %d "%s": a part is %s' % (i, part, FREE_PART_FORMS), col)
+        nums = []
+        for w in m.groups():
+            if not _NUM_RE.match(w):
+                fix = (": write %s" % w.replace(",", ".")) if re.match(r"^-?\d+,\d+$", w) \
+                    else ""
+                L.fail('in the shape, part %d "%s": "%s" is not a number%s'
+                       % (i, part, w, fix), col)
+            nums.append(float(w) if "." in w else int(w))
+        if prim in ("circle", "arc") and nums[2] <= 0:
+            L.fail('in the shape, part %d "%s": a radius must be greater than zero'
+                   % (i, part), col)
+        if prim == "arc" and not all(-360 <= a <= 360 for a in nums[3:]):
+            L.fail('in the shape, part %d "%s": angles lie between -360 and 360 degrees'
+                   % (i, part), col)
+        out.append(tuple([prim] + nums))
+    return out
+
+
+def _free(L, code, reason, domain, cat):
+    """free <name>: source S, unit U, shape "...", <placing relations>  # why"""
+    colon = code.find(":")
+    head = _tokens(0, code[:colon if colon >= 0 else len(code)])
+    if len(head) != 2 or colon < 0:
+        L.fail('a free object is written as: free <name>: source <who>, <where>, unit <u>, '
+               'shape "..."  # why', head[2][0] if len(head) > 2 else 0)
+    name = _name(L, head[1], "the free object's name")
+    parts, seen = [], set()
+    for col, piece in L.split_clauses(colon + 1, len(code)):
+        toks = _tokens(col, piece)
+        if not toks:
+            L.fail("an empty clause: two commas in a row, or a comma at the end", col)
+        c0, w0, _ = toks[0]
+        if w0 in ("source", "unit", "shape"):
+            if w0 in seen:
+                L.fail('"%s" is given twice' % w0, c0)
+            seen.add(w0)
+            if len(toks) != 2:
+                L.fail('%s is written as: %s' % (w0, {"source": "source user|model|import",
+                                                       "unit": "unit mm|cm|m",
+                                                       "shape": 'shape "..."'}[w0]), c0)
+            c1, v, typ = toks[1]
+            if w0 == "source":
+                if v not in FREE_SOURCES:
+                    L.fail('"%s" is not a source; a free object comes from: %s'
+                           % (v, ", ".join(FREE_SOURCES)), c1)
+                parts.append(("source", v))
+            elif w0 == "unit":
+                if v not in ("mm", "cm", "m"):
+                    L.fail('"%s" is not a length unit; use one of: cm, m, mm' % v, c1)
+                parts.append(("unit", v))
+            else:
+                if typ != "text":
+                    L.fail('the shape is written in quotes: shape "line 0 0 to 10 0"', c1)
+                parts.append(("shape", _free_shape(L, c1, v)))
+            continue
+        clause = _clause(L, col, piece, cat)
+        if clause.kind != "relation":
+            L.fail('a free object takes source, unit, shape and the relations that place '
+                   'it; "%s" is a word for catalogue objects' % w0, c0)
+        if clause.word not in FREE_RELATIONS:
+            L.fail('a free object is placed with %s; "%s" would make it part of checked '
+                   "geometry" % (", ".join(r.replace("_", " ") for r in FREE_RELATIONS),
+                                 clause.word.replace("_", " ")), c0)
+        parts.append(("relation", clause))
+    for key in ("source", "unit", "shape"):
+        if key not in seen:
+            L.fail('a free object must give its %s' % key, colon)
+    if not reason:
+        L.fail("a free object must say why the language could not say it: end the line "
+               "with # and the reason", len(code.rstrip()))
+    f = Free(name, parts, L.n)
+    f.reason, f.domain = reason, domain
+    return f
+
+
 def parse(text, catalogue=None):
     """Read a script. Raises ScriptError naming the line and column."""
     cat = catalogue or _form.default_catalogue()
@@ -622,8 +793,11 @@ def parse(text, catalogue=None):
         if words[0] == "option":
             items.append(_option(L, code, domain, reason, cat))
             continue
+        if words[0] == "free":
+            items.append(_free(L, code, reason, domain, cat))
+            continue
         if words[0] not in cat["acts"]:
-            L.fail('a line starts with domain, choice, option, #, or an act (%s), not "%s"'
+            L.fail('a line starts with domain, choice, option, free, #, or an act (%s), not "%s"'
                    % (", ".join(sorted(cat["acts"])), words[0]), L.text.index(words[0]))
         items.append(_statement(L, code, len(code) - len(code.lstrip()), domain, reason, cat))
     while items and isinstance(items[-1], Blank):
@@ -665,7 +839,7 @@ def _link_choices(items):
                 raise ScriptError(item.line, 'there is no choice called "%s": write "choice '
                                   '%s: open" first' % (item.choice, item.choice))
             current.options.append(item)
-        elif isinstance(item, (Statement, Domain)):
+        elif isinstance(item, (Statement, Domain, Free)):
             close(current)
             current = None
     close(current)
@@ -745,6 +919,15 @@ def check(script, known=None):
 
     def run(statements, k):
         for s in statements:
+            tainted = [(c, t) for c in s.clauses if c.kind == "relation"
+                       for t in c.targets if k.get(t) == "free"]
+            if tainted:
+                c, t = tainted[0]
+                errors.append(ScriptError(
+                    s.line, 'in "%s": "%s" is free geometry, and checked geometry is never '
+                    "placed by it -- free may lean on checked, never the reverse" % (c, t),
+                    source=str(s)))
+                continue
             f = s.form()
             v = _form.validate(f, known=k)
             for p in v.problems:
@@ -755,6 +938,27 @@ def check(script, known=None):
     for item in script.items:
         if isinstance(item, Statement):
             run([item], known)
+        elif isinstance(item, Free):
+            bad = None
+            if item.name in known:
+                bad = '"%s" already exists (%s); a free object needs a new name' % (
+                    item.name, _form._a(known[item.name]))
+            elif item.name in _form.default_catalogue()["reserved_names"]:
+                bad = '"%s" is a reserved name' % item.name
+            else:
+                for c in item.clauses:
+                    missing = [t for t in c.targets if t not in known
+                               and t not in _form.default_catalogue()["reserved_names"]]
+                    if missing:
+                        bad = 'in "%s": there is no object called "%s"' % (c, missing[0])
+                        break
+            if not item.clauses:
+                bad = bad or ('"%s" has no place: a free shape is placed by relations like '
+                              "everything else (the first object goes at origin)" % item.name)
+            if bad:
+                errors.append(ScriptError(item.line, bad, source=str(item)))
+            else:
+                known[item.name] = "free"
         elif isinstance(item, Choice):
             after = {}
             for label in item.labels():
