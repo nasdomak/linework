@@ -102,6 +102,11 @@ Measured 29-30/09/2026.
   Python reuses the stale `.pyc` and the result belongs to the previous file
   (seen 01/10/2026: a restored file still "failed").
 
+- **The GitHub jobs list can lag behind the run.** On 02/10/2026 a job stayed
+  `in_progress` in `/actions/runs/<id>/jobs` for minutes after the run and the
+  job's own check run had completed, so `ci_status.py --wait` never returned.
+  `tools/ci_status.py` now asks the check run when the two disagree.
+
 ## The development loop
 
 The loop is the first prototype of the product: autonomous, bridled,

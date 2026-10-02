@@ -363,7 +363,7 @@
       ],
       "verification": "tests/test_contours.py asserts closure is exact and that a nearly-closed contour is reported as open",
       "size": "M",
-      "status": "doing",
+      "status": "done",
       "blocked_reason": "",
       "decision": ""
     },

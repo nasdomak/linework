@@ -78,6 +78,15 @@ def report(sha):
     jobs = api("/actions/runs/%s/jobs?per_page=100" % run["id"]).get("jobs", [])
     worst = 0
     for job in sorted(jobs, key=lambda j: j["name"]):
+        if job["status"] != "completed" and run["status"] == "completed":
+            # Seen 02/10/2026: the jobs list kept one job "in_progress" for
+            # minutes after the run (and the job's own check run) had completed.
+            # The check run is the authoritative record; ask it.
+            try:
+                check = api("/check-runs/%s" % job["id"])
+                job = dict(job, status=check["status"], conclusion=check["conclusion"])
+            except urllib.error.HTTPError:
+                pass
         verdict = job["conclusion"] or job["status"]
         print("  %-34s %s" % (job["name"], verdict))
         if job["status"] != "completed":
