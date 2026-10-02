@@ -26,3 +26,6 @@ the root `README.md`, "Repository layout".
   degenerate shapes refused when made, and `intersect(a, b)` for every pair:
   points (tangent or not), shared pieces, and notes naming parallel, collinear,
   tangent, concentric, coincident, outside.
+- `ops.py` -- offset, split, trim, extend, fillet, chamfer, tangents from a
+  point and between circles (ADR 0011): exact, and refused with the reason
+  when the request is ambiguous or does not fit.

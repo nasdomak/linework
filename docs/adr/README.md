@@ -15,6 +15,7 @@ the old one, never by editing it quietly.
 | [0008](0008-the-blank-page.md) | The blank page: anchoring by rule | accepted, 2026-10-02 |
 | [0009](0009-the-escape-hatch.md) | The escape hatch and its boundary | accepted, 2026-10-02 |
 | [0010](0010-exact-numbers.md) | Exact numbers in the solver: algebraic, never floats | accepted, 2026-10-02 |
+| [0011](0011-drafting-operations.md) | Drafting operations: exact, and refused when ambiguous | accepted, 2026-10-02 |
 
 Each ADR states its status, date, context, decision, consequences, and how it is
 verified. `tests/test_repo_shape.py` checks the ones the plan depends on.
