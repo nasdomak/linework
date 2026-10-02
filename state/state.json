@@ -1,14 +1,14 @@
 {
   "schema": 1,
   "project": "linework",
-  "updated": "2026-10-02T15:51:48Z",
+  "updated": "2026-10-02T16:04:15Z",
   "session_built_workbench": 2,
   "loop_enabled": true,
   "loop_note": "Set by a sentence from Marco: 'vai' turns this true, 'fermati' turns it false. tools/loop.py go / stop do it.",
-  "current_phase": 2,
+  "current_phase": 3,
   "open_phase": 2,
   "open_phase_note": "The highest phase the loop may work in without stopping. Only 'vai' at a gate (tools/loop.py go) raises it.",
-  "current_task": "P2-T05",
+  "current_task": null,
   "gate_width": "phase",
   "gate_width_options": [
     "task",
@@ -16,10 +16,10 @@
     "run"
   ],
   "gate_width_note": "How far the loop may run before it stops for Marco. 'task' stops after every task, 'phase' runs freely inside a product phase and stops at phase boundaries, 'run' stops only when it runs out of unblocked work. Marco changes it by saying so.",
-  "runs": 2,
+  "runs": 3,
   "last_run": {
-    "when": "2026-10-02T05:50:22Z",
-    "report": "reports/2026-10-02-run002.md"
+    "when": "2026-10-02T16:04:15Z",
+    "report": "reports/2026-10-02-run003.md"
   },
   "awaiting_marco": [],
   "history": [
@@ -92,6 +92,11 @@
       "task": "P2-T04",
       "title": "Distributions and notable points",
       "finished": "2026-10-02T15:51:47Z"
+    },
+    {
+      "task": "P2-T05",
+      "title": "Place by relations: every relation computed exactly",
+      "finished": "2026-10-02T16:03:23Z"
     }
   ]
 }

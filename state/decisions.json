@@ -21,6 +21,16 @@
       "rationale": "The catalogue's frame said 'the two targets' reference points', which for two rooms means their two lower-left corners: a wall along the floor of the living room, not between the rooms. The relation's own meaning ('a wall between two rooms') asks for the shared edge, so the frame is corrected to match it. Refusing non-touching rectangles avoids inventing which edges are meant.",
       "reversible": true,
       "blocks": []
+    },
+    {
+      "id": "D-006",
+      "raised": "2026-10-02",
+      "question": "A corner can carry one feature. The SCRIPT.md bracket puts a fillet on every corner (corner all) and a chamfer on top_left too, and the solver accepts both. What should happen?",
+      "context": "Found looking at the run-3 picture after P2-T05. Not done yet: it changes an example Marco may care about. Reversible.",
+      "proposed_default": "Refuse a second corner feature on a corner already taken, naming both; change the bracket example so the chamfer is on its own corner (a fillet per remaining corner instead of corner all).",
+      "rationale": "Seen in the picture of the placed bracket (reports/2026-10-02-run003-bracket.png): the chamfer and the fillet overlap at the top-left corner. Two features on one corner have no single outline, so the drawing would be ambiguous. Refusing is the rule everywhere else in the language.",
+      "reversible": true,
+      "blocks": []
     }
   ],
   "settled": [

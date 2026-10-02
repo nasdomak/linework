@@ -401,7 +401,7 @@
       ],
       "verification": "tests/test_place_relations.py: at least one hand-computed case per relation, plus the refusals",
       "size": "M",
-      "status": "doing",
+      "status": "done",
       "blocked_reason": "",
       "decision": "D-002"
     },

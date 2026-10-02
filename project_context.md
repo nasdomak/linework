@@ -35,64 +35,50 @@ Completeness is the north star. Name **`linework`** (Marco, 17/09/2026).
 
 ---
 
-## Current status (02/10/2026, run 2)
+## Current status (02/10/2026, run 3)
 
-**Phase 1 (the language) complete, 5 of 5 tasks. The loop is stopped at the
-gate to phase 2 (the geometry solver), waiting for "vai".** Report:
-`reports/2026-10-02-run002.md`.
+**Phase 2 (the geometry solver) complete, 5 of 5 tasks. The loop is stopped at
+the gate to phase 3 (the drawing: DXF in and out), waiting for "vai".**
+Report: `reports/2026-10-02-run003.md`, picture
+`reports/2026-10-02-run003-bracket.png`.
+
+### Measured in run 3 (02/10/2026)
+
+- Marco said "vai"; D-002 and D-003 unanswered, defaults taken (P2-T05 added;
+  edge and corner targets in P2-T04).
+- **P2-T01** (ADR 0010): `geometry/exact.py` -- every number is a Fraction or
+  an exact real algebraic number; no tolerance anywhere in `geometry/`.
+  `geometry/primitives.py` -- point, segment, arc, circle, ellipse, exact
+  intersection of all 15 pairs, degenerate cases named. 21 tests.
+- **P2-T02** (ADR 0011): `geometry/ops.py` -- offset, trim, extend, fillet,
+  chamfer, tangents; ambiguity refused with the reason. 15 tests.
+- **P2-T03** (ADR 0012): `geometry/contours.py` -- exact closure or "open" with
+  the exact gap. `geometry/factor.py` -- factoring over Q so fields use
+  minimal polynomials (a 45-degree rounded triangle went from degree 16 and
+  minutes to degree 2 and milliseconds). 8 + 4 tests.
+- **P2-T04** (ADR 0013): `geometry/distribute.py`, `geometry/notable.py`;
+  targets may name an edge or a corner (`plate1 top`), catalogue block
+  `edges`. 15 tests.
+- **P2-T05** (ADR 0014): `geometry/placement.py` computes along, between,
+  distributed over, fillets and chamfers; `on` now checks its host (found the
+  SCRIPT.md slot 4 mm off its plate; example fixed). Sizes the script does not
+  give raise `SizeNotKnown` naming the standard (phase 4). 16 tests.
+- `tools/ci_status.py` fixed: it waited forever when GitHub's jobs list lagged
+  behind the run (trap in CLAUDE.md).
+- **CI green on all 8 jobs for `820b548`: 213 passed, 0 failed, 0 skipped on
+  each of the six test jobs.** 28 deliberate breakages caught by the tests.
+- Of SCRIPT.md's examples the bracket places in full; architecture, civil and
+  schematic stop at sizes from the standard (wall thickness, bays, symbols).
+- **Open decisions for Marco:** D-004 (spacing of distributed copies, default
+  applied), D-005 (between two rooms = their shared edge, default applied),
+  **D-006** (fillet and chamfer on one corner: default *not* applied yet, it
+  changes the bracket example).
 
 ### Measured in run 2 (01-02/10/2026)
 
-- **P1-T01 done -- the commitment form** (ADR 0005). `shared/catalogue_v1.json`
-  is the closed vocabulary (5 domains, 3 acts, 4 units, 12 quantities,
-  10 relations, 7 properties, 30 object kinds), one entry per word with its
-  meaning. `lang/form.py` validates a form against it and refuses with one
-  readable reason per problem. No field takes a coordinate; every number must
-  appear in the user's words (`said`) in the user's unit. Schema
-  (`shared/form_schema_v1.json`) and `docs/CATALOGUE.md` are generated; CI's
-  plan job fails if they are stale. 37 worked forms in four domains.
-- `tests/test_form.py`, 24 tests. Breaking the validator in four places on
-  purpose made it fail each time. **CI green on all 8 jobs for commit
-  `deaef87`: 80 passed, 0 failed, 0 skipped on each of the six test jobs.**
-- Found while writing the examples: a wire from R1 to R1 passed (fixed:
-  `same-target`); "four holes" was refused (fixed: number words up to twenty,
-  English and Italian, count as said). Known accepted limit: "120 x 80"
-  committed as width 80, height 120 passes the form; the script and the
-  picture are where that is caught.
-
-- **P1-T02 done -- the script language** (ADR 0006, spec `docs/SCRIPT.md`).
-  One line = one form as a sentence (`add window w1: on wall_north, centred on
-  wall_north, width 120 cm`). `lang/script.py` parses, prints (exact round-trip
-  in the canonical layout), writes only accepted forms, checks top to bottom;
-  errors carry line and column. `tests/test_script.py`, 18 tests. **CI green
-  on all 8 jobs for `1220f69`: 99 passed, 0 failed, 0 skipped on each.**
-- Found by P1-T02 and fixed in `lang/form.py`: `known={}` (an empty drawing)
-  was read as "no drawing", so references to missing objects passed.
-- Trap recorded in `CLAUDE.md`: mutation checks can read a stale `.pyc`.
-- **P1-T03 done -- open choices** (ADR 0007): `choice <name>: open`,
-  `option <choice> <label>: <statement>`, `decided <label>`. `drawable()`
-  refuses any open choice, naming it. `tests/test_intent.py`, 10 tests. CI
-  green, commit `96b8247`, 109 passed on each job.
-- **P1-T04 done -- the blank page** (ADR 0008). First object `at origin`;
-  every relation names its frame in the catalogue (`frame`, `fixes`); each
-  object's left-right and up-down place decided by exactly one relation, or
-  refused. `lang/anchoring.py` decides, `geometry/placement.py` computes exact
-  mm (Fractions) for at / centred on / next to / offset from / aligned with.
-  Sides `inside`/`outside` removed (no edge named). Three ambiguous SCRIPT.md
-  examples found and fixed. `tests/test_anchoring.py`, 16 tests, hand-computed
-  values. **CI green, commit `d4b3378`: 125 passed, 0 failed, 0 skipped on
-  each of the six test jobs.**
-- **P1-T05 done -- the escape hatch** (ADR 0009). `free <name>: source
-  user|model|import, <placing relations>, unit, shape "line/circle/arc ..."  #
-  why`. Free is the shape, never the place; checked geometry is never placed by
-  free geometry; output keeps a separate FREE section; `lang/escape.py` lists
-  it for review. `tests/test_escape_hatch.py`, 10 tests. **CI green, commit
-  `cafc690`: 135 passed, 0 failed, 0 skipped on each of the six test jobs.**
-  CI pictures unchanged (P3-T04 render defects still open).
-- **Open decisions for Marco: D-002** (who computes along / between /
-  distributed: default, a new task P2-T05) and **D-003** (measuring from a
-  named edge: default, edge targets in phase 2 with P2-T04). Defaults apply
-  on the next run if unanswered; both reversible.
+- Phase 1 complete (ADRs 0005-0009): the commitment form and closed catalogue,
+  the script language, open choices, the blank page (anchoring by rule), the
+  escape hatch. CI green at `cafc690`, 135 tests per job.
 
 ### Measured in run 1 (30/09/2026)
 
@@ -178,16 +164,16 @@ gate to phase 2 (the geometry solver), waiting for "vai".** Report:
 
 ## Last action
 
-02/10/2026, run 2: phase 1 complete (P1-T01..T05), verified, CI green; report
-written; stopped at the gate to phase 2. D-002 and D-003 queued.
+02/10/2026, run 3: phase 2 complete (P2-T01..T05), verified, CI green; report
+and picture written; stopped at the gate to phase 3. D-004, D-005, D-006 queued.
 
 ---
 
 ## Next steps
 
-1. Marco looks at phase 1 and says "vai" for phase 2 (the geometry solver).
-   `loop.py go` opens the gate; `take-defaults` then applies D-002 (new task
-   P2-T05, place by relations) and D-003 (edge targets with P2-T04) if he has
-   not answered. Then P2-T01 (primitives and exact intersections).
+1. Marco looks at the run-3 report and says "vai" for phase 3 (DXF in and
+   out). `loop.py go` opens the gate; `take-defaults` then settles D-004,
+   D-005 and D-006 if he has not answered (D-006: refuse two features on one
+   corner and fix the bracket example -- do that first). Then P3-T01.
 2. Open the upstream conversation with LibreCAD about `addDimension` /
    `addHatch` when convenient: long lead time, nothing depends on it.
