@@ -1,0 +1,19 @@
+out/empty.png
+{
+  "file": "empty.dxf",
+  "entities": 0,
+  "by_type": {},
+  "by_layer": {},
+  "layers_defined": [
+    "0",
+    "DIM",
+    "Defpoints",
+    "OUTLINE",
+    "TEXT"
+  ],
+  "units": 4,
+  "extmin": null,
+  "extmax": null,
+  "size": null,
+  "dxfversion": "AC1024"
+}

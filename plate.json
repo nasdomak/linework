@@ -1,0 +1,42 @@
+out/plate.png
+{
+  "file": "plate.dxf",
+  "entities": 10,
+  "by_type": {
+    "CIRCLE": 4,
+    "DIMENSION": 2,
+    "HATCH": 1,
+    "LWPOLYLINE": 2,
+    "TEXT": 1
+  },
+  "by_layer": {
+    "DIM": 2,
+    "HOLES": 4,
+    "OUTLINE": 1,
+    "POCKET": 2,
+    "TEXT": 1
+  },
+  "layers_defined": [
+    "0",
+    "DIM",
+    "Defpoints",
+    "HOLES",
+    "OUTLINE",
+    "POCKET",
+    "TEXT"
+  ],
+  "units": 4,
+  "extmin": [
+    -25.570663,
+    -20.0
+  ],
+  "extmax": [
+    121.659099,
+    93.0
+  ],
+  "size": [
+    147.229762,
+    113.0
+  ],
+  "dxfversion": "AC1024"
+}

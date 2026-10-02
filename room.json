@@ -1,0 +1,38 @@
+out/room.png
+{
+  "file": "room.dxf",
+  "entities": 8,
+  "by_type": {
+    "DIMENSION": 2,
+    "LWPOLYLINE": 5,
+    "TEXT": 1
+  },
+  "by_layer": {
+    "DIM": 2,
+    "OPENINGS": 3,
+    "TEXT": 1,
+    "WALLS": 2
+  },
+  "layers_defined": [
+    "0",
+    "DIM",
+    "Defpoints",
+    "OPENINGS",
+    "TEXT",
+    "WALLS"
+  ],
+  "units": 4,
+  "extmin": [
+    -1122.826524,
+    -980.0
+  ],
+  "extmax": [
+    5300.0,
+    4700.0
+  ],
+  "size": [
+    6422.826524,
+    5680.0
+  ],
+  "dxfversion": "AC1024"
+}
